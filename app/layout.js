@@ -1,16 +1,27 @@
 import "./globals.css";
+import { ThemeProvider } from "./components/providers/theme-provider";
+import Navbar from "./components/common/Navbar";
 
 export const metadata = {
-  title: "3D Animated Space",
-  description: "Next.js + Three.js Project",
+  title: "my3dlab",
+  description: "WebGL Asset Workspace",
 };
 
 export default function RootLayout({ children }) {
   return (
-    // Adding the "dark" class here enables the dark variables from your CSS
-    <html lang="en" className="dark">
-      <body className="antialiased">
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased bg-background text-foreground">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {/* Imported Stateless Navbar Component */}
+          <Navbar />
+          
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

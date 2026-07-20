@@ -3,8 +3,7 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 
-// The AnimatedSphere component now accepts "color" as a prop
-function AnimatedSphere({ color }) {
+function SphereMesh({ color }) {
   const meshRef = useRef(null);
 
   useFrame((state, delta) => {
@@ -17,7 +16,6 @@ function AnimatedSphere({ color }) {
   return (
     <mesh ref={meshRef}>
       <sphereGeometry args={[1.8, 32, 32]} />
-      {/* The color is dynamically driven by the prop */}
       <meshStandardMaterial 
         color={color} 
         roughness={0.15} 
@@ -27,16 +25,16 @@ function AnimatedSphere({ color }) {
   );
 }
 
-// ThreeScene passes the color prop down to AnimatedSphere
-export default function ThreeScene({ color = "#3b82f6" }) {
+export default function ThreeScene({ color = "#00d2ff" }) {
   return (
-    <div className="w-full h-screen">
+    // Fix: Removed 'h-screen' to resolve the height CSS conflict warning
+    <div className="w-full h-full">
       <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
         <ambientLight intensity={0.4} />
         <directionalLight position={[10, 10, 5]} intensity={1.5} />
         <pointLight position={[-10, -10, -10]} intensity={0.5} />
         
-        <AnimatedSphere color={color} />
+        <SphereMesh color={color} />
       </Canvas>
     </div>
   );
