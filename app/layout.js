@@ -3,7 +3,7 @@ import { ThemeProvider } from "./components/providers/theme-provider";
 import Navbar from "./components/common/Navbar";
 
 export const metadata = {
-  title: "my3dlab",
+  title: "my3DLibrary",
   description: "WebGL Asset Workspace",
 };
 

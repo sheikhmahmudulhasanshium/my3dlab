@@ -1,4 +1,4 @@
-# my3dlab
+# my3DLibrary
 
 An interactive multi-page WebGL development lab and component library built with **Next.js (App Router)**, **React Three Fiber (R3F)**, **Three.js**, and styled using **Tailwind CSS** and **shadcn/ui**.
 
@@ -30,7 +30,7 @@ This workspace serves as a personal laboratory for designing, testing, and organ
 
 This project uses a clean, highly portable structure to organize 3D assets separately from page routing:
 
-my3dlab/
+my3DLibrary/
 ├── app/                        <-- Next.js Routing
 │   ├── globals.css
 │   ├── layout.js              <-- Layout wrapper integrating Navbar & ThemeProvider
@@ -62,8 +62,8 @@ Make sure you have Node.js and pnpm installed.
 ### Installation
 
 1. Clone the repository:
-   git clone https://github.com/sheikhmahmudulhasanshium/my3dlab.git
-   cd my3dlab
+   git clone https://github.com/sheikhmahmudulhasanshium/my3DLibrary.git
+   cd my3DLibrary
 
 2. Install dependencies:
    pnpm install

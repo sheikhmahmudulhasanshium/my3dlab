@@ -7,7 +7,7 @@ export const HomePage = () => {
       <div className="max-w-md space-y-6">
         <div className="space-y-2">
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-foreground">
-            my3dlab
+            my3DLibrary
           </h1>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
             A personalized showcase of interactive 3D WebGL assets and component scenes.
@@ -29,6 +29,13 @@ export const HomePage = () => {
           >
             <span className="text-lg font-bold text-foreground">Scene 2</span>
             <span className="text-xs text-muted-foreground">Rotating Box Asset</span>
+          </Link>
+          <Link 
+            href="/scene/scene-2" 
+            className="flex flex-col items-center p-6 rounded-2xl border border-border bg-card/50 hover:bg-accent/50 transition-all text-center space-y-2"
+          >
+            <span className="text-lg font-bold text-foreground">Scene 3</span>
+            <span className="text-xs text-muted-foreground">360 Mug Asset</span>
           </Link>
         </div>
       </div>
