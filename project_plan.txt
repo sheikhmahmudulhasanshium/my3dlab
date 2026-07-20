@@ -1,0 +1,27 @@
+NEXT.JS + THREE.JS PROJECT PLAN
+================================
+
+Phase 1: Environment Setup [COMPLETED]
+- Initialize Next.js project using pnpm
+- Install Three.js and React Three Fiber (@react-three/fiber)
+- Initialize shadcn/ui
+
+Phase 2: Boilerplate Cleanup [NEXT]
+- Clean globals.css
+- Reset page.js layout
+
+Phase 3: Basic 3D Scene
+- Create responsive client-side Canvas component
+- Build a simple rotating 3D mesh (cube)
+- Implement lighting
+
+Phase 4: Integrating the 2D UI Overlay
+- Import shadcn/ui Card and Button
+- Position UI on top of 3D Canvas
+
+Phase 5: Interactivity
+- Connect UI state to 3D mesh properties
+
+Phase 6: Deployment
+- Commit codebase to GitHub
+- Deploy to Vercel
