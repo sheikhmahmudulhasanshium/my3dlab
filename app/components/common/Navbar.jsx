@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { ThemeToggle } from "../button/theme-toggle";
+// Fix: Updated path to match the lowercase theme-toggle filename
+import ThemeToggle from "../button/theme-toggle";
+
 export const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-background/30 backdrop-blur-md border-b border-border/50 pointer-events-auto">
@@ -12,6 +14,9 @@ export const Navbar = () => {
         </Link>
         <Link href="/scene/scene-2" className="hover:text-sky-400 transition-colors">
           Scene 2 (Box)
+        </Link>
+        <Link href="/scene/scene-3" className="hover:text-sky-400 transition-colors">
+          Scene 3 (Mug)
         </Link>
         <ThemeToggle />
       </div>
