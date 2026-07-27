@@ -37,10 +37,25 @@ export const HomePage = () => {
             <span className="text-lg font-bold text-foreground">Scene 3</span>
             <span className="text-xs text-muted-foreground">360 Mug Asset</span>
           </Link>
+           <Link href="/scene/scene-4" 
+                  className="flex flex-col items-center p-6 rounded-2xl border border-border bg-card/50 hover:bg-accent/50 transition-all text-center space-y-2">
+          <span className="text-lg font-bold text-foreground">Scene 4</span>
+          <span className="text-xs text-muted-foreground">Interactive Playground</span>
+        </Link>
+        <Link 
+          href="/scene/scene-5" 
+          className="flex flex-col items-center p-6 rounded-2xl border border-border bg-card/50 hover:bg-accent/50 transition-all text-center space-y-2"
+        >
+          <span className="text-lg font-bold text-foreground">Scene 5</span>
+          <span className="text-xs text-muted-foreground">Custom 3D Model Car</span>
+        </Link>
         </div>
+      </div>
+      <div className="absolute bottom-4 text-xs text-muted-foreground">
+        &copy; 2024 my3DLibrary. All rights reserved.
       </div>
     </main>
   );
-};
+}
 
 export default HomePage;

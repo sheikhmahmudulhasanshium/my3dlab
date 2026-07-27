@@ -17,6 +17,12 @@ export const Navbar = () => {
         </Link>
         <Link href="/scene/scene-3" className="hover:text-sky-400 transition-colors">
           Scene 3 (Mug)
+        </Link> 
+        <Link href="/scene/scene-4" className="hover:text-sky-400 transition-colors text-sky-400 font-semibold">
+          Scene 4 (Playground)
+        </Link>
+        <Link href="/scene/scene-5" className="hover:text-sky-400 transition-colors">
+          Scene 5 (Jeep)
         </Link>
         <ThemeToggle />
       </div>

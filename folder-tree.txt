@@ -1,0 +1,34 @@
+📦app
+ ┣ 📂components
+ ┃ ┣ 📂3D
+ ┃ ┃ ┣ 📜AutoSpin.js
+ ┃ ┃ ┣ 📜BoxAsset.js
+ ┃ ┃ ┣ 📜CapsuleAsset.js
+ ┃ ┃ ┣ 📜CylinderAsset.js
+ ┃ ┃ ┣ 📜FlatShapeAsset.js
+ ┃ ┃ ┣ 📜JeepAsset.js
+ ┃ ┃ ┣ 📜mug.js
+ ┃ ┃ ┣ 📜SpokeTireAsset.js
+ ┃ ┃ ┗ 📜WheelAsset.js
+ ┃ ┣ 📂button
+ ┃ ┃ ┗ 📜theme-toggle.jsx
+ ┃ ┣ 📂common
+ ┃ ┃ ┗ 📜Navbar.jsx
+ ┃ ┣ 📂providers
+ ┃ ┃ ┗ 📜theme-provider.jsx
+ ┃ ┗ 📜ThreeScene.jsx
+ ┣ 📂scene
+ ┃ ┣ 📂scene-1
+ ┃ ┃ ┗ 📜page.js
+ ┃ ┣ 📂scene-2
+ ┃ ┃ ┗ 📜page.js
+ ┃ ┣ 📂scene-3
+ ┃ ┃ ┗ 📜page.js
+ ┃ ┣ 📂scene-4
+ ┃ ┃ ┗ 📜page.js
+ ┃ ┗ 📂scene-5
+ ┃ ┃ ┗ 📜page.js
+ ┣ 📜favicon.ico
+ ┣ 📜globals.css
+ ┣ 📜layout.js
+ ┗ 📜page.js
