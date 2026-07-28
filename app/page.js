@@ -1,61 +1,114 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export const HomePage = () => {
   return (
-    // bg-background automatically adapts to light/dark themes
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 text-center bg-background pt-24 transition-colors duration-200">
-      <div className="max-w-md space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-foreground">
-            my3DLibrary
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-            A personalized showcase of interactive 3D WebGL assets and component scenes.
-          </p>
+    <main className="flex min-h-screen flex-col items-center justify-between p-6 bg-background pt-20 transition-colors duration-200">
+      
+      {/* Central Container (Width capped to align with the 800px visual presentation) */}
+      <div className="w-full max-w-200 flex flex-col justify-between grow space-y-10">
+        
+        {/* Header Section */}
+        <div className="space-y-6 text-center">
+          
+          {/* Main Brand Logo - Scaled up to 800x800px max limit */}
+          <div className="relative w-full max-w-60 aspect-square mx-auto sizes-(max-width: 800px) 100vw, 800px">
+            <Image 
+              src="/logo.png" 
+              alt="my3DLibrary Logo" 
+              fill
+              priority
+              sizes="(max-width: 800px) 100vw, 800px"
+              className="object-contain"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
+              my3DLibrary
+            </h1>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              A personalized showcase of interactive 3D WebGL assets and component scenes.
+            </p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-4">
+        {/* Scene Navigation Stack */}
+        <div className="flex flex-col gap-3 max-w-lg mx-auto w-full">
           <Link 
             href="/scene/scene-1" 
-            className="flex flex-col items-center p-6 rounded-2xl border border-border bg-card/50 hover:bg-accent/50 transition-all text-center space-y-2"
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/40 hover:bg-accent/40 hover:border-sky-500/30 transition-all text-left group"
           >
-            <span className="text-lg font-bold text-foreground">Scene 1</span>
-            <span className="text-xs text-muted-foreground">Rotating Sphere Asset</span>
+            <div>
+              <span className="block text-sm font-bold text-foreground group-hover:text-sky-400 transition-colors">Scene 1</span>
+              <span className="text-[11px] text-muted-foreground">Rotating Sphere Asset</span>
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
           </Link>
           
           <Link 
             href="/scene/scene-2" 
-            className="flex flex-col items-center p-6 rounded-2xl border border-border bg-card/50 hover:bg-accent/50 transition-all text-center space-y-2"
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/40 hover:bg-accent/40 hover:border-sky-500/30 transition-all text-left group"
           >
-            <span className="text-lg font-bold text-foreground">Scene 2</span>
-            <span className="text-xs text-muted-foreground">Rotating Box Asset</span>
+            <div>
+              <span className="block text-sm font-bold text-foreground group-hover:text-sky-400 transition-colors">Scene 2</span>
+              <span className="text-[11px] text-muted-foreground">Rotating Box Asset</span>
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
           </Link>
+
           <Link 
-            href="/scene/scene-2" 
-            className="flex flex-col items-center p-6 rounded-2xl border border-border bg-card/50 hover:bg-accent/50 transition-all text-center space-y-2"
+            href="/scene/scene-3" 
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/40 hover:bg-accent/40 hover:border-sky-500/30 transition-all text-left group"
           >
-            <span className="text-lg font-bold text-foreground">Scene 3</span>
-            <span className="text-xs text-muted-foreground">360 Mug Asset</span>
+            <div>
+              <span className="block text-sm font-bold text-foreground group-hover:text-sky-400 transition-colors">Scene 3</span>
+              <span className="text-[11px] text-muted-foreground">360 Mug Asset</span>
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
           </Link>
-           <Link href="/scene/scene-4" 
-                  className="flex flex-col items-center p-6 rounded-2xl border border-border bg-card/50 hover:bg-accent/50 transition-all text-center space-y-2">
-          <span className="text-lg font-bold text-foreground">Scene 4</span>
-          <span className="text-xs text-muted-foreground">Interactive Playground</span>
-        </Link>
-        <Link 
-          href="/scene/scene-5" 
-          className="flex flex-col items-center p-6 rounded-2xl border border-border bg-card/50 hover:bg-accent/50 transition-all text-center space-y-2"
-        >
-          <span className="text-lg font-bold text-foreground">Scene 5</span>
-          <span className="text-xs text-muted-foreground">Custom 3D Model Car</span>
-        </Link>
+
+          <Link 
+            href="/scene/scene-4" 
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/40 hover:bg-accent/40 hover:border-sky-500/30 transition-all text-left group"
+          >
+            <div>
+              <span className="block text-sm font-bold text-foreground group-hover:text-sky-400 transition-colors">Scene 4</span>
+              <span className="text-[11px] text-muted-foreground">Interactive Playground</span>
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
+          </Link>
+
+          <Link 
+            href="/scene/scene-5" 
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/40 hover:bg-accent/40 hover:border-sky-500/30 transition-all text-left group"
+          >
+            <div>
+              <span className="block text-sm font-bold text-foreground group-hover:text-sky-400 transition-colors">Scene 5</span>
+              <span className="text-[11px] text-muted-foreground">Custom 3D Model Car</span>
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
+          </Link>
         </div>
-      </div>
-      <div className="absolute bottom-4 text-xs text-muted-foreground">
-        &copy; 2024 my3DLibrary. All rights reserved.
+
+        {/* Structured Column Footer */}
+        <footer className="w-full pt-6 pb-2 border-t border-border/50 text-center space-y-2 max-w-lg mx-auto">
+          <div className="relative w-10 h-10 mx-auto opacity-40 hover:opacity-75 transition-opacity">
+            <Image 
+              src="/logo.png" 
+              alt="Logo Footer" 
+              fill 
+              className="object-contain grayscale"
+            />
+          </div>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
+            &copy; 2024 my3DLibrary. All rights reserved.
+          </p>
+        </footer>
+
       </div>
     </main>
   );
-}
+};
 
 export default HomePage;

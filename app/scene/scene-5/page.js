@@ -1,4 +1,3 @@
-// app/scene/scene-4/page.js
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -9,12 +8,258 @@ import * as THREE from "three";
 import JeepAsset from "../../components/3D/JeepAsset";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-function DrivingController({ engineOn, lazySusanOn, accelerateActive, steeringRef, wheelRotRef, color }) {
+// --- Mobile Controller Component with Stylish Wheel & Showroom Toggle ---
+function MobileController({ 
+  engineOn, 
+  setEngineOn, 
+  lazySusanOn, 
+  setLazySusanOn, 
+  mobileControlsRef 
+}) {
+  const [activeGear, setActiveGear] = useState("D"); // Default gear set to "D"
+  const [accelerating, setAccelerating] = useState(false);
+  const [braking, setBraking] = useState(false);
+  const [steerValue, setSteerValue] = useState(0); 
+
+  // Steering wheel rotation angle state (in radians)
+  const [wheelRotation, setWheelRotation] = useState(0); 
+
+  const wheelRef = useRef(null);
+  const isInteracting = useRef(false);
+  const startPointerAngle = useRef(0);
+  const startWheelRotation = useRef(0);
+  const springBackId = useRef(null);
+
+  // Sync state changes with the shared ref read by the physics engine
+  useEffect(() => {
+    if (mobileControlsRef.current) {
+      mobileControlsRef.current.steering = steerValue;
+      mobileControlsRef.current.accelerate = accelerating;
+      mobileControlsRef.current.brake = braking;
+      mobileControlsRef.current.gear = activeGear;
+    }
+  }, [steerValue, accelerating, braking, activeGear, mobileControlsRef]);
+
+  // Clean up animation loops on unmount
+  useEffect(() => {
+    return () => {
+      if (springBackId.current) cancelAnimationFrame(springBackId.current);
+    };
+  }, []);
+
+  const handleWheelPointerDown = (e) => {
+    isInteracting.current = true;
+    if (springBackId.current) cancelAnimationFrame(springBackId.current);
+
+    e.currentTarget.setPointerCapture(e.pointerId);
+
+    const rect = wheelRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const dx = e.clientX - centerX;
+    const dy = e.clientY - centerY;
+
+    startPointerAngle.current = Math.atan2(dy, dx);
+    startWheelRotation.current = wheelRotation;
+  };
+
+  const handleWheelPointerMove = (e) => {
+    if (!isInteracting.current || !wheelRef.current) return;
+
+    const rect = wheelRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const dx = e.clientX - centerX;
+    const dy = e.clientY - centerY;
+
+    const currentPointerAngle = Math.atan2(dy, dx);
+    let angleDiff = currentPointerAngle - startPointerAngle.current;
+
+    // Angle wrap alignment boundary
+    if (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+    if (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+    const maxRotation = 2.2; // ~126 degrees total turn limit
+    let newRotation = startWheelRotation.current + angleDiff;
+    newRotation = Math.max(-maxRotation, Math.min(maxRotation, newRotation));
+
+    setWheelRotation(newRotation);
+    setSteerValue(newRotation / maxRotation); 
+  };
+
+  const handleWheelPointerUp = (e) => {
+    isInteracting.current = false;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (err) {}
+
+    // Dynamic mechanical spring auto-centering animation
+    const animateSpring = () => {
+      if (isInteracting.current) return;
+
+      setWheelRotation((prev) => {
+        if (Math.abs(prev) < 0.05) {
+          setSteerValue(0);
+          return 0;
+        }
+        const next = prev * 0.82; // Friction decay
+        setSteerValue(next / 2.2);
+        springBackId.current = requestAnimationFrame(animateSpring);
+        return next;
+      });
+    };
+    springBackId.current = requestAnimationFrame(animateSpring);
+  };
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-50 p-4 select-none touch-none pointer-events-none lg:hidden flex flex-col justify-end h-56 bg-linear-to-t from-slate-950/90 via-slate-950/40 to-transparent">
+      
+      {/* Top Section: Gears, Engine, and Showcase controls */}
+      <div className="flex justify-between items-end w-full mb-4 pointer-events-auto">
+        
+        {/* Left Side: Steering Wheel (Uses Stylish Vector SVG) */}
+        <div className="flex flex-col gap-1.5 items-center">
+          <div 
+            ref={wheelRef}
+            onPointerDown={handleWheelPointerDown}
+            onPointerMove={handleWheelPointerMove}
+            onPointerUp={handleWheelPointerUp}
+            onPointerCancel={handleWheelPointerUp}
+            style={{ transform: `rotate(${wheelRotation}rad)` }}
+            className="w-28 h-28 rounded-full cursor-grab active:cursor-grabbing touch-none flex items-center justify-center filter drop-shadow-xl"
+          >
+            {/* Stylish Vector Sports Steering Wheel */}
+            <svg viewBox="0 0 100 100" className="w-full h-full">
+              {/* Outer Grip Ring (Leather textured finish) */}
+              <circle cx="50" cy="50" r="44" stroke="#1e293b" strokeWidth="8" fill="none" />
+              {/* Inner Rim Accent Ring */}
+              <circle cx="50" cy="50" r="40" stroke="#0f172a" strokeWidth="1.5" fill="none" />
+              
+              {/* Center Spokes structure */}
+              <path d="M 12 50 L 34 50 L 36 53 L 14 53 Z" fill="#475569" /> {/* Left spoke */}
+              <path d="M 88 50 L 66 50 L 64 53 L 86 53 Z" fill="#475569" /> {/* Right spoke */}
+              <path d="M 47 62 L 53 62 L 51.5 86 L 48.5 86 Z" fill="#334155" /> {/* Bottom spoke */}
+
+              {/* Top Orientation Marker (Amber paint) */}
+              <path d="M 48 6 L 52 6 L 52 14 L 48 14 Z" fill="#f59e0b" />
+
+              {/* Core center horn button */}
+              <circle cx="50" cy="50" r="14" fill="#1e293b" stroke="#334155" strokeWidth="2.5" />
+              <text x="50" y="52" fontSize="5.5" fontWeight="900" fill="#64748b" textAnchor="middle" letterSpacing="0.5">
+                WRANGLER
+              </text>
+            </svg>
+          </div>
+          <span className="text-[9px] text-slate-400 uppercase tracking-widest font-semibold">Steer Wheel</span>
+        </div>
+
+        {/* Center Section: Gears Column */}
+        <div className="flex flex-col gap-1 bg-slate-900/90 border border-slate-700/60 p-1 rounded-xl">
+          {["P", "R", "N", "D"].map((gear) => (
+            <button
+              key={gear}
+              className={`w-8 h-8 rounded-lg text-xs font-black flex items-center justify-center transition-all ${
+                activeGear === gear
+                  ? "bg-amber-500 text-slate-950 font-extrabold shadow-md shadow-amber-500/20"
+                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+              }`}
+              onClick={() => setActiveGear(gear)}
+            >
+              {gear}
+            </button>
+          ))}
+        </div>
+
+        {/* Right Section: System Ignition, Turn Showcase, and Drive Pedals */}
+        <div className="flex flex-col gap-3 items-end">
+          
+          {/* Dashboard Ignition & Showcase System Row */}
+          <div className="flex gap-2">
+            {/* Showroom rotation button (Lazy Susan) */}
+            <button
+              onClick={() => setLazySusanOn(!lazySusanOn)}
+              className={`px-3 py-1.5 rounded-lg font-bold text-[9px] border uppercase tracking-wider transition-all flex items-center gap-1 ${
+                lazySusanOn
+                  ? "bg-sky-500/20 border-sky-500 text-sky-400 shadow-lg shadow-sky-500/10"
+                  : "bg-slate-800/80 border-slate-700 text-slate-400 hover:bg-slate-700"
+              }`}
+            >
+              🔄 Showroom
+            </button>
+
+            {/* Ignition On/Off Toggle */}
+            <button
+              className={`px-3 py-1.5 rounded-lg font-bold text-[9px] border uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                engineOn
+                  ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
+                  : "bg-rose-500/20 border-rose-500 text-rose-400"
+              }`}
+              onClick={() => setEngineOn(!engineOn)}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${engineOn ? "bg-emerald-400 animate-pulse" : "bg-rose-400"}`} />
+              {engineOn ? "ON" : "OFF"}
+            </button>
+          </div>
+
+          {/* Pedals */}
+          <div className="flex gap-2">
+            {/* Brake [B] */}
+            <div className="flex flex-col items-center gap-0.5">
+              <button
+                onPointerDown={() => setBraking(true)}
+                onPointerUp={() => setBraking(false)}
+                onPointerLeave={() => setBraking(false)}
+                className={`w-12 h-12 rounded-xl border flex items-center justify-center text-sm font-black transition-all touch-none ${
+                  braking
+                    ? "bg-rose-500 text-white border-rose-400 scale-95 shadow-md shadow-rose-500/20"
+                    : "bg-slate-900 text-rose-400 border-rose-500/30"
+                }`}
+              >
+                B
+              </button>
+              <span className="text-[8px] text-slate-400 font-semibold uppercase tracking-widest">Brake</span>
+            </div>
+
+            {/* Gas [A] */}
+            <div className="flex flex-col items-center gap-0.5">
+              <button
+                onPointerDown={() => setAccelerating(true)}
+                onPointerUp={() => setAccelerating(false)}
+                onPointerLeave={() => setAccelerating(false)}
+                className={`w-12 h-12 rounded-xl border flex items-center justify-center text-sm font-black transition-all touch-none ${
+                  accelerating
+                    ? "bg-emerald-500 text-white border-emerald-400 scale-95 shadow-md shadow-emerald-500/20"
+                    : "bg-slate-900 text-emerald-400 border-emerald-500/30"
+                }`}
+              >
+                A
+              </button>
+              <span className="text-[8px] text-slate-400 font-semibold uppercase tracking-widest">Gas</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// --- Dynamic physics and model driver controller ---
+function DrivingController({ 
+  engineOn, 
+  setEngineOn, 
+  lazySusanOn, 
+  accelerateActive, 
+  steeringRef, 
+  wheelRotRef, 
+  color,
+  mobileControlsRef 
+}) {
   const jeepGroupRef = useRef(null);
 
   const physics = useRef({
     x: 0,
-    y: 0, // <-- Added coordinate to fix NaN calculations
+    y: 0,
     z: 0,
     speed: 0,
     angle: 0,             
@@ -63,21 +308,45 @@ function DrivingController({ engineOn, lazySusanOn, accelerateActive, steeringRe
       return;
     }
 
-    // Inputs
+    // --- Resolve Active Inputs (Keyboard / Pointer) ---
     let driveInput = 0;
+    let steerInput = 0;
+    let isBraking = false;
+    let isTurbo = accelerateActive;
+
+    // Keyboard checks
     if (keysPressed.current["ArrowUp"]) driveInput = 1;
     if (keysPressed.current["ArrowDown"]) driveInput = -1;
-
-    let steerInput = 0;
     if (keysPressed.current["ArrowLeft"]) steerInput = 1;
     if (keysPressed.current["ArrowRight"]) steerInput = -1;
 
-    const accelRate = accelerateActive ? 12.0 : 4.0;
-    const frictionDecel = 2.0;
-    const maxSpeedLimit = accelerateActive ? 6.0 : 3.0;
+    // Mobile Overlay check
+    const mobile = mobileControlsRef.current;
+    if (mobile) {
+      if (mobile.steering !== 0) {
+        steerInput = -mobile.steering;
+      }
+      if (mobile.accelerate) {
+        if (mobile.gear === "D") driveInput = 1;
+        if (mobile.gear === "R") driveInput = -1;
+      }
+      if (mobile.brake) {
+        isBraking = true;
+      }
+    }
+
+    // Auto-Ignition: Automatically turn engine on if user gives driving inputs
+    if (driveInput !== 0 && !engineOn) {
+      setEngineOn(true);
+    }
+
+    // Dynamic deceleration (Much higher if brake is held down)
+    const accelRate = isTurbo ? 12.0 : 4.0;
+    const frictionDecel = isBraking ? 12.0 : 2.0;
+    const maxSpeedLimit = isTurbo ? 6.0 : 3.0;
 
     // Movement Calculations
-    if (engineOn && driveInput !== 0) {
+    if (engineOn && driveInput !== 0 && !isBraking) {
       physics.current.speed += driveInput * accelRate * delta;
       if (physics.current.speed > maxSpeedLimit) physics.current.speed = maxSpeedLimit;
       if (physics.current.speed < -maxSpeedLimit * 0.5) physics.current.speed = -maxSpeedLimit * 0.5;
@@ -133,6 +402,7 @@ function DrivingController({ engineOn, lazySusanOn, accelerateActive, steeringRe
   );
 }
 
+// --- Main Page Component ---
 export default function SceneFourPage() {
   const [engineOn, setEngineOn] = useState(false);
   const [lazySusanOn, setLazySusanOn] = useState(false);
@@ -141,6 +411,14 @@ export default function SceneFourPage() {
 
   const steeringRef = useRef(0);
   const wheelRotRef = useRef(0);
+
+  // References to hold the raw values from the mobile touch controls (Default Gear set to "D")
+  const mobileControlsRef = useRef({
+    steering: 0,
+    accelerate: false,
+    brake: false,
+    gear: "D" 
+  });
 
   useEffect(() => {
     const handleGlobalKeys = (e) => {
@@ -187,11 +465,13 @@ export default function SceneFourPage() {
 
           <DrivingController 
             engineOn={engineOn}
+            setEngineOn={setEngineOn}
             lazySusanOn={lazySusanOn}
             accelerateActive={accelerateActive}
             steeringRef={steeringRef}
             wheelRotRef={wheelRotRef}
             color={color}
+            mobileControlsRef={mobileControlsRef}
           />
 
           <Grid 
@@ -209,8 +489,8 @@ export default function SceneFourPage() {
         </Canvas>
       </div>
 
-      {/* Controller Guide HUD Card */}
-      <div className="absolute inset-x-0 bottom-0 z-10 flex p-6 md:p-12 pointer-events-none justify-start md:justify-end">
+      {/* Controller Guide HUD Card (Hidden on small screens to make room for Touch Controller) */}
+      <div className="absolute inset-x-0 bottom-0 z-10 hidden lg:flex p-6 md:p-12 pointer-events-none justify-start md:justify-end">
         <Card className="pointer-events-auto w-full max-w-sm border-border bg-card/60 backdrop-blur-md text-card-foreground shadow-lg">
           <CardHeader className="p-5">
             <CardTitle className="text-base font-semibold flex justify-between items-center">
@@ -256,6 +536,15 @@ export default function SceneFourPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Mobile-only Controller Overlay with updated parameters */}
+      <MobileController 
+        engineOn={engineOn}
+        setEngineOn={setEngineOn}
+        lazySusanOn={lazySusanOn}
+        setLazySusanOn={setLazySusanOn}
+        mobileControlsRef={mobileControlsRef}
+      />
     </main>
   );
 }

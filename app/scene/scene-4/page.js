@@ -12,6 +12,7 @@ import CylinderAsset from "../../components/3D/CylinderAsset";
 import CapsuleAsset from "../../components/3D/CapsuleAsset";
 import FlatShapeAsset from "../../components/3D/FlatShapeAsset";
 import SpokeTireAsset from "../../components/3D/SpokeTireAsset";
+import TrafficConeAsset from "../../components/3D/TrafficConeAsset"; // Added modular import
 
 export default function SceneFourPage() {
   // React states to track which model is selected and what color to pass into the R3F materials
@@ -37,6 +38,7 @@ export default function SceneFourPage() {
             {activeModel === "cylinder" && <CylinderAsset color={color} />}
             {activeModel === "capsule" && <CapsuleAsset color={color} />}
             {activeModel === "spokeTire" && <SpokeTireAsset color={color} />}
+            {activeModel === "trafficCone" && <TrafficConeAsset color={color} />} {/* Added rendering block */}
             
             {/* Flat Shapes (Triangle, Quadragon, Pentagon, Circle) are grouped under FlatShapeAsset */}
             {["triangle", "quadragon", "polygon", "circle"].includes(activeModel) && (
@@ -110,6 +112,13 @@ export default function SceneFourPage() {
                   onClick={() => setActiveModel("circle")}
                 >
                   Circle
+                </Button>
+                <Button 
+                  variant={activeModel === "trafficCone" ? "default" : "outline"} 
+                  className="text-[11px] col-span-2 h-8 px-2 border-dashed border-sky-400 dark:border-sky-500"    
+                  onClick={() => setActiveModel("trafficCone")}
+                >
+                   Traffic Cone
                 </Button>
                 <Button 
                   variant={activeModel === "spokeTire" ? "default" : "outline"} 

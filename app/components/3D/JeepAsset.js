@@ -40,7 +40,7 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
         <meshStandardMaterial color={color} roughness={0.4} metalness={0.3} />
       </mesh>
 
-      {/* Modified: Shortened Rear Tailgate Panel (Halved vertically to Y=0.35 to expose interior) */}
+      {/* Rear Tailgate Panel */}
       <mesh position={[0, 0.595, -1.275]} castShadow receiveShadow>
         <boxGeometry args={[1.4, 0.35, 0.05]} />
         <meshStandardMaterial color={color} roughness={0.4} metalness={0.3} />
@@ -88,15 +88,14 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
       </mesh>
 
 
-      {/* --- 5. Shorter and Thicker Vertical Exhaust Stack --- */}
-      {/* Width/Radius increased from 0.038 to 0.07; Height decreased from 1.4 to 0.7 */}
+      {/* --- 5. Vertical Exhaust Stack --- */}
       <group position={[0.68, 0.77, -1.2]}>
         {/* Main Pipe body */}
         <mesh castShadow>
           <cylinderGeometry args={[0.07, 0.07, 0.7, 12]} />
           <meshStandardMaterial color="#94a3b8" metalness={0.9} roughness={0.15} />
         </mesh>
-        {/* Shorter, wider angled exhaust exit elbow */}
+        {/* Angled exhaust exit elbow */}
         <mesh position={[0, 0.37, -0.04]} rotation={[0.4, 0, 0]} castShadow>
           <cylinderGeometry args={[0.07, 0.07, 0.14, 12]} />
           <meshStandardMaterial color="#94a3b8" metalness={0.95} roughness={0.15} />
@@ -253,8 +252,7 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
         </mesh>
       </group>
 
-      {/* Modified: Back Light color changed to vibrant Scarlet Red */}
-      {/* color changed from light pink to rose-600 (#e11d48), emissive changed to true pure red (#ff0000) */}
+      {/* Back Lights */}
       <group position={[0, 0.72, -1.31]}>
         <mesh position={[-0.55, 0, 0]}>
           <boxGeometry args={[0.15, 0.09, 0.02]} />
@@ -275,22 +273,48 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
       </group>
 
 
-      {/* --- 10. Spare Tire & Driving Wheels Assembly --- */}
+      {/* --- 10. Spare Tire & Active Driving Wheels Assembly --- */}
+      {/* Static Spare Tire mounted on the tailgate */}
       <group position={[0, 0.8, -1.39]} rotation={[0, Math.PI, 0]}>
         <WheelAsset isFront={false} isStatic={true} />
       </group>
 
+      {/* Front Left Wheel */}
       <group position={[-0.82, 0.38, 1.1]} rotation={[0, Math.PI / 2, 0]}>
-        <WheelAsset isFront={true} steeringAngleRef={steeringAngleRef} rotationRef={wheelRotationRef} />
+        <WheelAsset 
+          isFront={true} 
+          steeringAngleRef={steeringAngleRef} 
+          rotationRef={wheelRotationRef} 
+          engineOn={engineOn}
+        />
       </group>
+      
+      {/* Front Right Wheel */}
       <group position={[0.82, 0.38, 1.1]} rotation={[0, -Math.PI / 2, 0]}>
-        <WheelAsset isFront={true} steeringAngleRef={steeringAngleRef} rotationRef={wheelRotationRef} />
+        <WheelAsset 
+          isFront={true} 
+          steeringAngleRef={steeringAngleRef} 
+          rotationRef={wheelRotationRef} 
+          engineOn={engineOn}
+        />
       </group>
+      
+      {/* Rear Left Wheel */}
       <group position={[-0.82, 0.38, -0.75]} rotation={[0, Math.PI / 2, 0]}>
-        <WheelAsset isFront={false} rotationRef={wheelRotationRef} />
+        <WheelAsset 
+          isFront={false} 
+          rotationRef={wheelRotationRef} 
+          engineOn={engineOn}
+        />
       </group>
+      
+      {/* Rear Right Wheel */}
       <group position={[0.82, 0.38, -0.75]} rotation={[0, -Math.PI / 2, 0]}>
-        <WheelAsset isFront={false} rotationRef={wheelRotationRef} />
+        <WheelAsset 
+          isFront={false} 
+          rotationRef={wheelRotationRef} 
+          engineOn={engineOn}
+        />
       </group>
     </group>
   );
