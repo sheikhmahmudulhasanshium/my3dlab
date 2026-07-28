@@ -5,14 +5,11 @@ export const HomePage = () => {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6 bg-background pt-20 transition-colors duration-200">
       
-      {/* Central Container (Width capped to align with the 800px visual presentation) */}
       <div className="w-full max-w-200 flex flex-col justify-between grow space-y-10">
         
         {/* Header Section */}
         <div className="space-y-6 text-center">
-          
-          {/* Main Brand Logo - Scaled up to 800x800px max limit */}
-          <div className="relative w-full max-w-60 aspect-square mx-auto sizes-(max-width: 800px) 100vw, 800px">
+          <div className="relative w-full max-w-200 aspect-square mx-auto">
             <Image 
               src="/logo.png" 
               alt="my3DLibrary Logo" 
@@ -86,6 +83,18 @@ export const HomePage = () => {
             <div>
               <span className="block text-sm font-bold text-foreground group-hover:text-sky-400 transition-colors">Scene 5</span>
               <span className="text-[11px] text-muted-foreground">Custom 3D Model Car</span>
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
+          </Link>
+
+          {/* New Scene 6 Link */}
+          <Link 
+            href="/scene/scene-6" 
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/40 hover:bg-accent/40 hover:border-sky-500/30 transition-all text-left group"
+          >
+            <div>
+              <span className="block text-sm font-bold text-foreground group-hover:text-sky-400 transition-colors">Scene 6</span>
+              <span className="text-[11px] text-muted-foreground">Arboretum Showcase (Trees)</span>
             </div>
             <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
           </Link>
