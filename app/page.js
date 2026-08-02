@@ -98,6 +98,17 @@ export const HomePage = () => {
             </div>
             <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
           </Link>
+          {/* New Scene 7 Link */}
+          <Link 
+            href="/scene/scene-7" 
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/40 hover:bg-accent/40 hover:border-sky-500/30 transition-all text-left group"
+          >
+            <div>
+              <span className="block text-sm font-bold text-foreground group-hover:text-sky-400 transition-colors">Scene 7</span>
+              <span className="text-[11px] text-muted-foreground">Dynamic Cloudscape</span>
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
+          </Link>
         </div>
 
         {/* Structured Column Footer */}
