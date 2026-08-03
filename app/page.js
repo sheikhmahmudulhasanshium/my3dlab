@@ -109,6 +109,16 @@ export const HomePage = () => {
             </div>
             <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
           </Link>
+          <Link 
+            href="/scene/scene-8" 
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/40 hover:bg-accent/40 hover:border-sky-500/30 transition-all text-left group"
+          >
+            <div>
+              <span className="block text-sm font-bold text-foreground group-hover:text-sky-400 transition-colors">Scene 8</span>
+              <span className="text-[11px] text-muted-foreground">Sky Elements Showcase</span>
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
+          </Link>
         </div>
 
         {/* Structured Column Footer */}

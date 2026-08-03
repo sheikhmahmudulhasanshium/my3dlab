@@ -1,9 +1,9 @@
-"use client"; // Required to use usePathname client-side hook
+"use client"; 
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation"; // Hook to detect active path
-import { Globe, Box, Coffee, Shapes, Car, Trees, Cloud } from "lucide-react";
+import { usePathname } from "next/navigation"; 
+import { Globe, Box, Coffee, Shapes, Car, Trees, Cloud, CloudSun } from "lucide-react"; // Imported CloudSun
 import ThemeToggle from "../button/theme-toggle";
 
 const Navbar = () => {
@@ -17,10 +17,10 @@ const Navbar = () => {
     { href: "/scene/scene-5", title: "Scene 5 (Jeep)", Icon: Car },
     { href: "/scene/scene-6", title: "Scene 6 (Trees)", Icon: Trees },
     { href: "/scene/scene-7", title: "Scene 7 (Clouds)", Icon: Cloud },
+    { href: "/scene/scene-8", title: "Scene 8 (Sky Elements)", Icon: CloudSun }, // New Route Registered
   ];
 
   return (
-    // Restored your exact translucent bg (bg-background/30) and split border opacity (border-b-border/50)
     <nav className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center bg-background/30 backdrop-blur-md border-b border-b-border/50 pointer-events-auto px-4 overflow-hidden">
       
       {/* 1/4 (25%) - Logo Column */}
@@ -50,8 +50,8 @@ const Navbar = () => {
                 title={title}
                 className={`p-2 rounded-lg transition-all shrink-0 ${
                   isActive 
-                    ? "text-sky-400 bg-sky-500/10 font-medium" // Selected/Active color state
-                    : "text-muted-foreground hover:text-sky-400 hover:bg-slate-500/10" // Default state
+                    ? "text-sky-400 bg-sky-500/10 font-medium" 
+                    : "text-muted-foreground hover:text-sky-400 hover:bg-slate-500/10" 
                 }`}
               >
                 <Icon className="w-4 h-4 sm:w-5 sm:h-5" />

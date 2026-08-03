@@ -4,7 +4,6 @@ import { useMemo, useRef, useLayoutEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-// Seeded pseudo-random generator
 function createSeededRandom(seed = 54321) {
   return function () {
     let t = (seed += 0x6d2b79f5);
@@ -14,7 +13,6 @@ function createSeededRandom(seed = 54321) {
   };
 }
 
-// Generates a multi-lobed, organic alpha profile to eliminate circular outlines
 function createMultiLobedCloudTexture() {
   const canvas = document.createElement("canvas");
   canvas.width = 512;
@@ -23,14 +21,13 @@ function createMultiLobedCloudTexture() {
 
   ctx.clearRect(0, 0, 512, 512);
 
-  // Overlapping soft radial lobes to construct a natural cloud silhouette
   const lobes = [
-    { x: 256, y: 256, r: 130, intensity: 1.0 },  // Center core
-    { x: 195, y: 275, r: 95,  intensity: 0.82 }, // Left puff
-    { x: 315, y: 265, r: 105, intensity: 0.85 }, // Right puff
-    { x: 250, y: 195, r: 85,  intensity: 0.78 }, // Top puff
-    { x: 145, y: 285, r: 75,  intensity: 0.52 }, // Left soft tail
-    { x: 365, y: 275, r: 80,  intensity: 0.58 }, // Right soft tail
+    { x: 256, y: 256, r: 130, intensity: 1.0 },
+    { x: 195, y: 275, r: 95,  intensity: 0.82 },
+    { x: 315, y: 265, r: 105, intensity: 0.85 },
+    { x: 250, y: 195, r: 85,  intensity: 0.78 },
+    { x: 145, y: 285, r: 75,  intensity: 0.52 },
+    { x: 365, y: 275, r: 80,  intensity: 0.58 },
   ];
 
   lobes.forEach((lobe) => {
@@ -52,7 +49,6 @@ function createMultiLobedCloudTexture() {
   return texture;
 }
 
-// Continuous color lerp matching your specified gradient curves
 function getPuffThemeProps(preset, heightVal) {
   const h = THREE.MathUtils.clamp(heightVal, 0, 1);
 
@@ -62,7 +58,6 @@ function getPuffThemeProps(preset, heightVal) {
     const top = new THREE.Color("#F8FAFB");
 
     const color = new THREE.Color();
-
     if (h < 0.55) {
       color.lerpColors(bottom, middle, THREE.MathUtils.smoothstep(h / 0.55, 0, 1));
     } else {
@@ -76,12 +71,11 @@ function getPuffThemeProps(preset, heightVal) {
   }
 
   if (preset === "storm") {
-    const bottom = new THREE.Color("#252B34");
-    const middle = new THREE.Color("#343D49");
-    const top = new THREE.Color("#4B5664");
+    const bottom = new THREE.Color("#1a1e24");
+    const middle = new THREE.Color("#2d3540");
+    const top = new THREE.Color("#3c4552");
 
     const color = new THREE.Color();
-
     if (h < 0.6) {
       color.lerpColors(bottom, middle, THREE.MathUtils.smoothstep(h / 0.6, 0, 1));
     } else {
@@ -94,13 +88,31 @@ function getPuffThemeProps(preset, heightVal) {
     };
   }
 
+  if (preset === "eclipse") {
+    // Silver linings and dark, eclipsed silhouettes
+    const bottom = new THREE.Color("#0c0d12");
+    const middle = new THREE.Color("#161821");
+    const top = new THREE.Color("#3c4154"); // Backlit silver edge
+
+    const color = new THREE.Color();
+    if (h < 0.7) {
+      color.lerpColors(bottom, middle, THREE.MathUtils.smoothstep(h / 0.7, 0, 1));
+    } else {
+      color.lerpColors(middle, top, THREE.MathUtils.smoothstep((h - 0.7) / 0.3, 0, 1));
+    }
+
+    return {
+      color: `#${color.getHexString()}`,
+      opacity: THREE.MathUtils.lerp(0.35, 0.55, h),
+    };
+  }
+
   if (preset === "moonNight") {
     const bottom = new THREE.Color("#202938");
     const middle = new THREE.Color("#2B3547");
     const top = new THREE.Color("#435067");
 
     const color = new THREE.Color();
-
     if (h < 0.6) {
       color.lerpColors(bottom, middle, THREE.MathUtils.smoothstep(h / 0.6, 0, 1));
     } else {
@@ -113,13 +125,12 @@ function getPuffThemeProps(preset, heightVal) {
     };
   }
 
-  // Sunrise fallback configuration
+  // Sunrise fallbacks
   const bottom = new THREE.Color("#C8B8B4");
   const middle = new THREE.Color("#E3D4D0");
   const top = new THREE.Color("#F4E8DE");
 
   const color = new THREE.Color();
-
   if (h < 0.6) {
     color.lerpColors(bottom, middle, THREE.MathUtils.smoothstep(h / 0.6, 0, 1));
   } else {
@@ -132,8 +143,8 @@ function getPuffThemeProps(preset, heightVal) {
   };
 }
 
-export default function CloudSystem({
-  activePreset = "day", // day, sunrise, storm, moonNight
+export default function ProceduralCloud({
+  activePreset = "day",
   windSpeed = 0.12,
   billowScale = 0.6,
   baseOpacity = 1.0,
@@ -161,7 +172,6 @@ export default function CloudSystem({
     };
   }, [cloudTexture]);
 
-  // Generate Cloud coordinates
   const { cloudObjects, totalPuffs } = useMemo(() => {
     const random = createSeededRandom(43210);
     const tempClouds = [];
@@ -171,14 +181,12 @@ export default function CloudSystem({
       const puffs = [];
       const puffCount = Math.floor(random() * 5) + 7;
 
-      // Base shadow puff (Y=0)
       puffs.push({
         localPos: new THREE.Vector3(0, 0, 0),
         scale: new THREE.Vector3(4.5, 1.3, 1.0),
         heightVal: 0.0,
       });
 
-      // Side flurries
       puffs.push({
         localPos: new THREE.Vector3(-2.2, -0.1, -0.2),
         scale: new THREE.Vector3(3.2, 0.9, 1.0),
@@ -190,7 +198,6 @@ export default function CloudSystem({
         heightVal: 0.15,
       });
 
-      // Towers
       const peakHeight = random() * 0.4 + 0.8;
       puffs.push({
         localPos: new THREE.Vector3(-0.6, 0.5, 0.1),
@@ -203,14 +210,12 @@ export default function CloudSystem({
         heightVal: 0.55,
       });
 
-      // Peaks
       puffs.push({
         localPos: new THREE.Vector3(0.0, peakHeight, 0.0),
         scale: new THREE.Vector3(2.2, 2.0, 1.0),
         heightVal: 0.95,
       });
 
-      // Stably normalized random puffs (eliminates coordinate/color-lerp jumps)
       const remaining = puffCount - puffs.length;
       for (let i = 0; i < remaining; i++) {
         const theta = random() * Math.PI * 2;
@@ -329,7 +334,6 @@ export default function CloudSystem({
     return { cloudObjects: tempClouds, totalPuffs: puffIndexCounter };
   }, [staticClouds, dynamicClouds, wispyClouds, windSpeed, skyWidth, skyDepth]);
 
-  // Frame animation triggers
   useFrame((state) => {
     if (!meshRef.current) return;
 
@@ -371,7 +375,6 @@ export default function CloudSystem({
     }
   });
 
-  // Dynamically update colors and opacities when the active preset changes
   useLayoutEffect(() => {
     if (meshRef.current && meshRef.current.geometry) {
       const opacities = new Float32Array(totalPuffs);
@@ -397,7 +400,6 @@ export default function CloudSystem({
     }
   }, [cloudObjects, totalPuffs, activePreset, baseOpacity]);
 
-  // Shader extension for integrated vertex billowing & custom attributes
   const customMaterial = useMemo(() => {
     const mat = new THREE.MeshBasicMaterial(materialConfig);
     mat.onBeforeCompile = (shader) => {
@@ -420,7 +422,6 @@ export default function CloudSystem({
         #include <begin_vertex>
         vOpacity = aOpacity;
         
-        // Dynamic swelling coordinates
         float wave = sin(uTime * 0.9 * uBillowSpeed + position.x * 2.2 + position.y * 1.6) * 0.14 * uBillowScale;
         float waveY = cos(uTime * 0.7 * uBillowSpeed + position.y * 2.2) * 0.14 * uBillowScale;
         transformed.x += wave;
