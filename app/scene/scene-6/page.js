@@ -1,23 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Modular Imports pointing to our 3D directory assets
-import CoconutTree from "../../components/3D/CoconutTree";
-import PalmTree from "../../components/3D/PalmTree";
-import ChristmasTree from "../../components/3D/ChristmasTree";
-import MangoTree from "../../components/3D/MangoTree";
-import OakTree from "../../components/3D/OakTree";
-import SakuraTree from "../../components/3D/SakuraTree";
+import CoconutTree from "../../components/3D/tree/CoconutTree";
+import PalmTree from "../../components/3D/tree/PalmTree";
+import ChristmasTree from "../../components/3D/tree/ChristmasTree";
+import MangoTree from "../../components/3D/tree/MangoTree";
+import OakTree from "../../components/3D/tree/OakTree";
+import SakuraTree from "../../components/3D/tree/SakuraTree";
+import Grass from "../../components/3D/tree/Grass";
 
 export default function SceneSixPage() {
   const [activeTree, setActiveTree] = useState("coconut");
   const [leafColor, setLeafColor] = useState(""); 
   const [windSpeed, setWindSpeed] = useState(1.0); 
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef(null);
 
   const getFoliageColorLabel = () => {
     if (leafColor) return leafColor.toUpperCase();
@@ -28,12 +31,39 @@ export default function SceneSixPage() {
       case "mango": return "#064E3B (DARK EMERALD)";
       case "oak": return "#1B4332 (OAK)";
       case "sakura": return "#FDA4AF (SAKURA PINK)";
+      case "grass": return "#22C55E (JUNGLE FIELD)";
       default: return "DEFAULT";
     }
   };
 
+  const handleFullscreenToggle = async () => {
+    if (!containerRef.current) return;
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (err) {
+      console.warn("Fullscreen toggle was blocked:", err);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
   return (
-    <main className="relative min-h-screen w-screen overflow-hidden pt-16 bg-background transition-colors duration-200">
+    <main 
+      ref={containerRef}
+      className="relative min-h-screen w-screen overflow-hidden bg-background transition-colors duration-200"
+    >
       
       {/* 3D Canvas */}
       <div className="absolute inset-0 z-0">
@@ -48,13 +78,16 @@ export default function SceneSixPage() {
           />
           <pointLight position={[-10, -5, -10]} intensity={0.3} />
 
-          {/* Render Active Tree */}
+          {/* Render Selected Asset */}
           {activeTree === "xmas" && <ChristmasTree color={leafColor} windSpeed={windSpeed} />}
           {activeTree === "palm" && <PalmTree color={leafColor} windSpeed={windSpeed} />}
           {activeTree === "coconut" && <CoconutTree color={leafColor} windSpeed={windSpeed} />}
           {activeTree === "mango" && <MangoTree color={leafColor} windSpeed={windSpeed} />}
           {activeTree === "oak" && <OakTree color={leafColor} windSpeed={windSpeed} />}
           {activeTree === "sakura" && <SakuraTree color={leafColor} windSpeed={windSpeed} />}
+          
+          {/* Render individual dynamic scattered jungle field */}
+          {activeTree === "grass" && <Grass color={leafColor} windSpeed={windSpeed} />}
 
           {/* Ground Platform Grid */}
           <Grid position={[0, -0.6, 0]} args={[12, 12]} cellColor="#6b7280" sectionColor="#9ca3af" fadeDistance={30} />
@@ -67,17 +100,27 @@ export default function SceneSixPage() {
       <div className="absolute inset-x-0 bottom-0 z-10 flex p-6 md:p-12 pointer-events-none justify-start md:justify-end">
         <Card className="pointer-events-auto w-full max-w-sm border-border bg-card/45 backdrop-blur-md text-card-foreground shadow-lg">
           <CardHeader className="p-5">
-            <CardTitle className="text-base font-semibold">Arboretum Showcase</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Arboretum Showcase</CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleFullscreenToggle} 
+                className="h-7 text-[10px] px-2.5"
+              >
+                {isFullscreen ? "🗖 Windowed" : "🗖 Full Screen"}
+              </Button>
+            </div>
             <CardDescription className="text-xs text-muted-foreground">
-              Procedural low-poly familiar trees with dynamic wind simulation.
+              Procedural trees and multi-tier fanned grass fields.
             </CardDescription>
           </CardHeader>
           
           <CardContent className="px-5 pb-5 space-y-4">
-            {/* Tree Selectors */}
+            {/* Asset Selector */}
             <div>
               <label className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground block mb-2">
-                Select Tree Type
+                Select Model
               </label>
               <div className="grid grid-cols-3 gap-1.5">
                 <Button 
@@ -121,6 +164,13 @@ export default function SceneSixPage() {
                   onClick={() => { setActiveTree("sakura"); setLeafColor(""); }}
                 >
                   🌸 Sakura
+                </Button>
+                <Button 
+                  variant={activeTree === "grass" ? "default" : "outline"} 
+                  className="text-[10px] h-8 px-1 col-span-3 font-semibold" 
+                  onClick={() => { setActiveTree("grass"); setLeafColor(""); }}
+                >
+                  🌱 3D Grass Jungle (3 Variants)
                 </Button>
               </div>
             </div>

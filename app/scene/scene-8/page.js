@@ -6,8 +6,8 @@ import { OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import ProceduralCloud from "../../components/3D/CloudAsset";
-import SunMoon from "../../components/3D/SkyAsset";
+import ProceduralCloud from "../../components/3D/sky/CloudAsset";
+import SunMoon from "../../components/3D/sky/SunMoonAsset";
 
 export default function Scene8() {
   const [activePreset, setActivePreset] = useState("day"); // day, sunrise, storm, moonNight, eclipse

@@ -5,7 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
 
-import JeepAsset from "../../components/3D/JeepAsset";
+import JeepAsset from "../../components/3D/vehicle/JeepAsset";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 // --- Mobile Controller Component with Stylish Wheel & Showroom Toggle ---

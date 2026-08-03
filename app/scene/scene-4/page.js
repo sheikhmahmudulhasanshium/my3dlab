@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Modular imports pointing to our commented 3D directory assets
-import AutoSpin from "../../components/3D/AutoSpin";
-import CylinderAsset from "../../components/3D/CylinderAsset";
-import CapsuleAsset from "../../components/3D/CapsuleAsset";
-import FlatShapeAsset from "../../components/3D/FlatShapeAsset";
-import SpokeTireAsset from "../../components/3D/SpokeTireAsset";
-import TrafficConeAsset from "../../components/3D/TrafficConeAsset"; // Added modular import
+import AutoSpin from "../../components/3D/objects/AutoSpin";
+import CylinderAsset from "../../components/3D/objects/CylinderAsset";
+import CapsuleAsset from "../../components/3D/objects/CapsuleAsset";
+import FlatShapeAsset from "../../components/3D/objects/FlatShapeAsset";
+import SpokeTireAsset from "../../components/3D/objects/SpokeTireAsset";
+import TrafficConeAsset from "../../components/3D/objects/TrafficConeAsset"; // Added modular import
 
 export default function SceneFourPage() {
   // React states to track which model is selected and what color to pass into the R3F materials

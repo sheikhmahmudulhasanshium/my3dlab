@@ -1,15 +1,31 @@
 📦app
  ┣ 📂components
  ┃ ┣ 📂3D
- ┃ ┃ ┣ 📜AutoSpin.js
- ┃ ┃ ┣ 📜BoxAsset.js
- ┃ ┃ ┣ 📜CapsuleAsset.js
- ┃ ┃ ┣ 📜CylinderAsset.js
- ┃ ┃ ┣ 📜FlatShapeAsset.js
- ┃ ┃ ┣ 📜JeepAsset.js
- ┃ ┃ ┣ 📜mug.js
- ┃ ┃ ┣ 📜SpokeTireAsset.js
- ┃ ┃ ┗ 📜WheelAsset.js
+ ┃ ┃ ┣ 📂objects
+ ┃ ┃ ┃ ┣ 📜AutoSpin.js
+ ┃ ┃ ┃ ┣ 📜BoxAsset.js
+ ┃ ┃ ┃ ┣ 📜CapsuleAsset.js
+ ┃ ┃ ┃ ┣ 📜CylinderAsset.js
+ ┃ ┃ ┃ ┣ 📜FlatShapeAsset.js
+ ┃ ┃ ┃ ┣ 📜mug.js
+ ┃ ┃ ┃ ┣ 📜SpokeTireAsset.js
+ ┃ ┃ ┃ ┗ 📜TrafficConeAsset.js
+ ┃ ┃ ┣ 📂sky
+ ┃ ┃ ┃ ┣ 📜CloudAsset.js
+ ┃ ┃ ┃ ┗ 📜SunMoonAsset.js
+ ┃ ┃ ┣ 📂tree
+ ┃ ┃ ┃ ┣ 📜ChristmasTree.js
+ ┃ ┃ ┃ ┣ 📜CoconutTree.js
+ ┃ ┃ ┃ ┣ 📜Grass.js
+ ┃ ┃ ┃ ┣ 📜MangoTree.js
+ ┃ ┃ ┃ ┣ 📜OakTree.js
+ ┃ ┃ ┃ ┣ 📜PalmTree.js
+ ┃ ┃ ┃ ┣ 📜SakuraTree.js
+ ┃ ┃ ┃ ┗ 📜TreeBranch.js
+ ┃ ┃ ┗ 📂vehicle
+ ┃ ┃ ┃ ┣ 📜JeepAsset.js
+ ┃ ┃ ┃ ┣ 📜MobileController.js
+ ┃ ┃ ┃ ┗ 📜WheelAsset.js
  ┃ ┣ 📂button
  ┃ ┃ ┗ 📜theme-toggle.jsx
  ┃ ┣ 📂common
@@ -26,9 +42,14 @@
  ┃ ┃ ┗ 📜page.js
  ┃ ┣ 📂scene-4
  ┃ ┃ ┗ 📜page.js
- ┃ ┗ 📂scene-5
+ ┃ ┣ 📂scene-5
  ┃ ┃ ┗ 📜page.js
- ┣ 📜favicon.ico
+ ┃ ┣ 📂scene-6
+ ┃ ┃ ┗ 📜page.js
+ ┃ ┣ 📂scene-7
+ ┃ ┃ ┗ 📜page.js
+ ┃ ┗ 📂scene-8
+ ┃ ┃ ┗ 📜page.js
  ┣ 📜globals.css
  ┣ 📜layout.js
  ┗ 📜page.js

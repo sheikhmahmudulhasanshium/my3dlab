@@ -5,7 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import CloudSystem from "../../components/3D/CloudAsset"; // Modular Import for the Cloud System
+import CloudSystem from "../../components/3D/sky/CloudAsset"; // Modular Import for the Cloud System
 
 export default function Scene7() {
   const [activePreset, setActivePreset] = useState("day"); // day, sunrise, storm, moonNight
