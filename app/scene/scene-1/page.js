@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-const ThreeScene = dynamic(() => import("../../components/ThreeScene"), {
+const ThreeScene = dynamic(() => import("../../components/3D/objects/sphere"), {
   ssr: false,
   loading: () => (
     <div className="flex h-screen w-screen items-center justify-center bg-slate-950 text-slate-400">

@@ -9,36 +9,37 @@ export default function WheelAsset({
   steeringAngleRef, 
   rotationRef, 
   isStatic = false,
-  engineOn = false // Added engineOn prop
+  engineOn = false,
+  side = "left" // Added side prop to coordinate rolling direction
 }) {
   const steerRef = useRef(null);
   const rollRef = useRef(null);
   const tireGroupRef = useRef(null); 
 
-  // Black Rubber Tire (Radius: 0.22 to 0.38)
+  // Black Rubber Tire (Radius: 0.22 to 0.4)
   const tireShape = useMemo(() => {
     const shape = new THREE.Shape();
-    shape.absarc(0, 0, 0.38, 0, Math.PI * 2, false); 
+    shape.absarc(0, 0, 0.40, 0, Math.PI * 2, false); 
 
     const rimHole = new THREE.Path();
-    rimHole.absarc(0, 0, 0.22, 0, Math.PI * 2, true);
+    rimHole.absarc(0, 0, 0.23, 0, Math.PI * 2, true);
     shape.holes.push(rimHole);
     return shape;
   }, []);
 
-  // Silver Spokes (Radius: 0.06 to 0.22)
+  // Multi-Spoke Center Geometry
   const spokeShape = useMemo(() => {
     const shape = new THREE.Shape();
-    shape.absarc(0, 0, 0.22, 0, Math.PI * 2, false);
+    shape.absarc(0, 0, 0.23, 0, Math.PI * 2, false);
 
     const hubHole = new THREE.Path();
-    hubHole.absarc(0, 0, 0.06, 0, Math.PI * 2, true);
+    hubHole.absarc(0, 0, 0.07, 0, Math.PI * 2, true);
     shape.holes.push(hubHole);
 
-    // 5 Spoke cutouts
-    const totalCutouts = 5;
-    const cutoutRadius = 0.04;
-    const distanceToCenter = 0.13;
+    // 8 Spoke openings
+    const totalCutouts = 8;
+    const cutoutRadius = 0.035;
+    const distanceToCenter = 0.15;
 
     for (let i = 0; i < totalCutouts; i++) {
       const angle = (i / totalCutouts) * Math.PI * 2;
@@ -53,16 +54,16 @@ export default function WheelAsset({
   }, []);
 
   const tireSettings = useMemo(() => ({
-    depth: 0.18,
+    depth: 0.22, 
     bevelEnabled: true,
-    bevelSegments: 2,
+    bevelSegments: 3,
     steps: 1,
-    bevelSize: 0.015,
-    bevelThickness: 0.015,
+    bevelSize: 0.02,
+    bevelThickness: 0.02,
   }), []);
 
   const spokeSettings = useMemo(() => ({
-    depth: 0.14,
+    depth: 0.16,
     bevelEnabled: true,
     bevelSegments: 2,
     steps: 1,
@@ -70,22 +71,36 @@ export default function WheelAsset({
     bevelThickness: 0.01,
   }), []);
 
-  // Generate 32 low-profile off-road treads
+  // Mud-Terrain Treads
   const treads = useMemo(() => {
     const arr = [];
-    const count = 32;
+    const count = 36;
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2;
-      const x = Math.cos(angle) * 0.381; 
-      const y = Math.sin(angle) * 0.381;
-      const tilt = i % 2 === 0 ? 0.3 : -0.3; 
+      const x = Math.cos(angle) * 0.401; 
+      const y = Math.sin(angle) * 0.401;
+      const tilt = i % 2 === 0 ? 0.35 : -0.35; 
       arr.push({ x, y, angle: angle + Math.PI / 2, tilt });
     }
     return arr;
   }, []);
 
-  // Generate 5 mounting bolts coordinates
-  const bolts = useMemo(() => {
+  // Silver Beadlock Ring Bolts
+  const beadlockBolts = useMemo(() => {
+    const arr = [];
+    const count = 16;
+    const distance = 0.215;
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2;
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance;
+      arr.push({ x, y });
+    }
+    return arr;
+  }, []);
+
+  // Central Hub Lug Bolts
+  const centerHubBolts = useMemo(() => {
     const arr = [];
     const count = 5;
     const distance = 0.09;
@@ -101,33 +116,26 @@ export default function WheelAsset({
   useFrame((state) => {
     if (isStatic) return;
 
-    // Apply rotation around the Z-axis to roll
     if (rollRef.current && rotationRef) {
-      rollRef.current.rotation.z = rotationRef.current;
+      // Invert left side rotation to match forward translation physics
+      const directionFactor = side === "right" ? 1 : -1;
+      rollRef.current.rotation.z = rotationRef.current * directionFactor;
     }
 
-    // Apply steering angle around the Y-axis to steer
     if (isFront && steerRef.current && steeringAngleRef) {
       steerRef.current.rotation.y = steeringAngleRef.current;
     }
 
-    // Tire Bounciness & Squish suspension emulation (Runs only when engine is ON)
     if (tireGroupRef.current) {
       if (engineOn && rotationRef) {
         const rollValue = rotationRef.current;
-        
-        // Idle vibration if stationary, transitioning to rolling vibration when moving
         const speedFactor = Math.abs(rollValue) < 0.05 ? 0.12 : Math.min(1.5, Math.abs(rollValue)); 
-        
-        // Toned down frequency (22) and amplitude (0.002) for smooth bounciness
-        const bounceOffset = Math.sin(state.clock.getElapsedTime() * 22) * 0.002 * speedFactor;
+        const bounceOffset = Math.sin(state.clock.getElapsedTime() * 24) * 0.002 * speedFactor;
 
-        // Apply vertical bounce & scaling squish
-        tireGroupRef.current.scale.y = 1 - Math.max(0, bounceOffset * 0.4);
-        tireGroupRef.current.scale.x = 1 + Math.max(0, bounceOffset * 0.15);
+        tireGroupRef.current.scale.y = 1 - Math.max(0, bounceOffset * 0.45);
+        tireGroupRef.current.scale.x = 1 + Math.max(0, bounceOffset * 0.18);
         tireGroupRef.current.position.y = bounceOffset;
       } else {
-        // Reset to normal shape when engine is off
         tireGroupRef.current.scale.set(1, 1, 1);
         tireGroupRef.current.position.set(0, 0, 0);
       }
@@ -135,61 +143,71 @@ export default function WheelAsset({
   });
 
   return (
-    <group ref={steerRef}>
-      <group ref={tireGroupRef}>
-        <group ref={rollRef}>
-          
-          {/* A. Outer Matte Black Rubber Tire */}
-          <mesh position={[0, 0, -0.09]} castShadow>
-            <extrudeGeometry args={[tireShape, tireSettings]} />
-            <meshStandardMaterial color="#1a1b1f" roughness={0.9} metalness={0.02} />
-          </mesh>
-
-          {/* B. Crisscross Tire Gripper Treads */}
-          {treads.map((tread, i) => (
-            <mesh 
-              key={i} 
-              position={[tread.x, tread.y, 0]} 
-              rotation={[tread.tilt, 0, tread.angle]}
-              castShadow
-            >
-              <boxGeometry args={[0.05, 0.015, 0.17]} />
-              <meshStandardMaterial color="#111215" roughness={0.95} />
+    <group>
+      <group ref={steerRef}>
+        <group ref={tireGroupRef}>
+          <group ref={rollRef}>
+            
+            {/* A. Outer Tire Wall (Clean Slate Black) */}
+            <mesh position={[0, 0, -0.11]} castShadow>
+              <extrudeGeometry args={[tireShape, tireSettings]} />
+              <meshStandardMaterial color="#111214" roughness={0.92} metalness={0.01} />
             </mesh>
-          ))}
 
-          {/* C. Outer Rim Barrel Lip */}
-          <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-            <cylinderGeometry args={[0.222, 0.222, 0.18, 32, 1, true]} />
-            <meshStandardMaterial color="#475569" metalness={0.8} roughness={0.2} />
-          </mesh>
+            {/* B. Mud-Terrain Treads (Weathered Dirt/Silt Mud Finish for Contrast) */}
+            {treads.map((tread, i) => (
+              <mesh 
+                key={i} 
+                position={[tread.x, tread.y, 0]} 
+                rotation={[tread.tilt, 0, tread.angle]}
+                castShadow
+              >
+                <boxGeometry args={[0.07, 0.018, 0.21]} />
+                <meshStandardMaterial color="#4d463e" roughness={0.95} metalness={0.05} />
+              </mesh>
+            ))}
 
-          {/* D. Silver Steel Spokes */}
-          <mesh position={[0, 0, -0.07]} castShadow>
-            <extrudeGeometry args={[spokeShape, spokeSettings]} />
-            <meshStandardMaterial color="#94a3b8" roughness={0.2} metalness={0.9} />
-          </mesh>
-
-          {/* E. Symmetrical Rim Mounting Lug Bolts */}
-          {bolts.map((bolt, i) => (
-            <mesh key={i} position={[bolt.x, bolt.y, 0.072]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-              <cylinderGeometry args={[0.012, 0.012, 0.02, 6]} />
+            {/* C. Outer Rim Barrel Lip (Silver Metallic) */}
+            <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+              <cylinderGeometry args={[0.232, 0.232, 0.22, 32, 1, true]} />
               <meshStandardMaterial color="#cbd5e1" metalness={0.9} roughness={0.15} />
             </mesh>
-          ))}
 
-          {/* F. Rusty Outer Rim Ring Lip */}
-          <mesh position={[0, 0, 0.065]} castShadow>
-            <torusGeometry args={[0.22, 0.015, 8, 24]} />
-            <meshStandardMaterial color="#52321a" roughness={0.85} metalness={0.4} />
-          </mesh>
+            {/* D. Center Wheel Spokes (Silver Metallic) */}
+            <mesh position={[0, 0, -0.08]} castShadow>
+              <extrudeGeometry args={[spokeShape, spokeSettings]} />
+              <meshStandardMaterial color="#e2e8f0" roughness={0.15} metalness={0.95} />
+            </mesh>
 
-          {/* G. Golden Brass Center Hub Cap */}
-          <mesh position={[0, 0, 0.072]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-            <cylinderGeometry args={[0.06, 0.06, 0.02, 12]} />
-            <meshStandardMaterial color="#c5a012" roughness={0.3} metalness={0.8} />
-          </mesh>
+            {/* E. Outer Beadlock Clamp Ring (Silver Metallic) */}
+            <mesh position={[0, 0, 0.08]} castShadow>
+              <torusGeometry args={[0.228, 0.012, 12, 32]} />
+              <meshStandardMaterial color="#e2e8f0" roughness={0.1} metalness={0.95} />
+            </mesh>
 
+            {/* F. Beadlock Locking Fasteners */}
+            {beadlockBolts.map((bolt, i) => (
+              <mesh key={i} position={[bolt.x, bolt.y, 0.086]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+                <cylinderGeometry args={[0.008, 0.008, 0.015, 6]} />
+                <meshStandardMaterial color="#cbd5e1" metalness={0.9} roughness={0.15} />
+              </mesh>
+            ))}
+
+            {/* G. Central Lug Nuts */}
+            {centerHubBolts.map((bolt, i) => (
+              <mesh key={i} position={[bolt.x, bolt.y, 0.08]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+                <cylinderGeometry args={[0.01, 0.01, 0.02, 6]} />
+                <meshStandardMaterial color="#cbd5e1" metalness={0.9} roughness={0.15} />
+              </mesh>
+            ))}
+
+            {/* H. Machined Center Cap */}
+            <mesh position={[0, 0, 0.08]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+              <cylinderGeometry args={[0.06, 0.06, 0.022, 12]} />
+              <meshStandardMaterial color="#e2e8f0" roughness={0.1} metalness={0.95} />
+            </mesh>
+
+          </group>
         </group>
       </group>
     </group>
