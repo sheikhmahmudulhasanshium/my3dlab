@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Grid } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
 import JeepAsset from "../../components/3D/vehicle/jeep/JeepAsset";
+import GridCompass from "../../components/3D/vehicle/jeep/GridCompass"; // Imported isolated helper
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 // --- Mobile Controller Component with Stylish Wheel & Showroom Toggle ---
@@ -492,16 +493,9 @@ export default function SceneFourPage() {
             mobileControlsRef={mobileControlsRef}
           />
 
-          <Grid 
-            position={[0, 0, 0]} 
-            args={[100, 100]} 
-            cellColor="#4b5563" 
-            sectionColor="#1f2937" 
-            fadeDistance={40} 
-            cellThickness={1}
-            sectionThickness={1.5}
-          />
-          
+          {/* Integrated Isolated Grid and Wedge Compass Helper */}
+          <GridCompass />
+
           <OrbitControls enabled={lazySusanOn} enableZoom={true} enablePan={false} maxPolarAngle={Math.PI / 2.1} />
         </Canvas>
       </div>

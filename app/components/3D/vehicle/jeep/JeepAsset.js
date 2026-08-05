@@ -17,10 +17,10 @@ import RollCage from "./RollCage";
 import Headlights from "./Headlights";
 import LicensePlate from "./LicensePlate";
 
-// Parametric Half-Width Offsets
+// Parametric Height and Track Offsets
 const JEEP_CONFIG = {
   bodyHalfWidth: 0.70,   
-  wheelX: 0.82,          
+  wheelX: 0.85,          
   fenderX: 0.73,         
   railX: 0.50,           
   springX: 0.50,         
@@ -34,10 +34,10 @@ const JEEP_CONFIG = {
   bPillarZ: -0.15,       
   tailgateZ: -1.25,      
   
-  axleY: 0.38,           
-  tubFloorY: 0.43,       
-  tubTopY: 1.02,         
-  cageTopY: 1.48,        
+  axleY: 0.46,           
+  tubFloorY: 0.51,       
+  tubTopY: 1.10,         
+  cageTopY: 1.56,        
 };
 
 export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef, color }) {
@@ -178,15 +178,15 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
 
   return (
     <group>
-      {/* Proportional 1.2x Chassis and body panel scale group */}
-      <group scale={[1.2, 1.2, 1.2]} position={[0, -0.076, 0]}>
+      {/* CORRECTED: position.y adjusted from -0.167 to -0.067 to raise the body 10% vertically */}
+      <group scale={[1.2, 1.44, 1.56]} position={[0, -0.067, 0]}>
         
         <group ref={chassisRef}>
           <ChassisFrame cfg={cfg} materials={materials} />
         </group>
         
         <group ref={bodyRef}>
-          <BodyPanels cfg={cfg} materials={materials} />
+          <BodyPanels cfg={cfg} materials={materials} spareWheelRef={spareWheelRef} />
         </group>
         
         <group ref={fenderRef}>
@@ -202,11 +202,11 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
         </group>
         
         <group ref={windshieldRef}>
-          <Windshield cfg={cfg} materials={materials} />
+          <Windshield cfg={cfg} materials={materials} engineOn={engineOn} />
         </group>
         
         <group ref={interiorRef}>
-          <CabinInterior cfg={cfg} materials={materials} />
+          <CabinInterior cfg={cfg} materials={materials} engineOn={engineOn} steeringAngleRef={steeringAngleRef} />
         </group>
         
         <group ref={cageRef}>
@@ -226,16 +226,15 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
         </group>
         
         <group ref={plateRef}>
-          <LicensePlate position={[0, 0.65, cfg.tailgateZ - 0.055]} rotation={[0, Math.PI, 0]} />
+          <LicensePlate position={[0, 0.50, cfg.tailgateZ - 0.055]} rotation={[0, Math.PI, 0]} />
         </group>
 
       </group>
 
-      {/* --- Wheels (Separated for progressive ground-up assembly) --- */}
-      {/* 4 Active Driving Wheels (Step 1: Land first on ground level) */}
+      {/* --- Active Wheels (Remain at ground level) --- */}
       <group ref={wheelsRef}>
         {/* Front Left Wheel */}
-        <group position={[-cfg.wheelX * 1.2, cfg.axleY, cfg.frontAxleZ * 1.2]} rotation={[0, Math.PI / 2, 0]}>
+        <group position={[-cfg.wheelX * 1.2, cfg.axleY, cfg.frontAxleZ * 1.56]} rotation={[0, Math.PI / 2, 0]}>
           <WheelAsset 
             isFront={true} 
             side="left"
@@ -246,7 +245,7 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
         </group>
         
         {/* Front Right Wheel */}
-        <group position={[cfg.wheelX * 1.2, cfg.axleY, cfg.frontAxleZ * 1.2]} rotation={[0, -Math.PI / 2, 0]}>
+        <group position={[cfg.wheelX * 1.2, cfg.axleY, cfg.frontAxleZ * 1.56]} rotation={[0, -Math.PI / 2, 0]}>
           <WheelAsset 
             isFront={true} 
             side="right"
@@ -257,7 +256,7 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
         </group>
         
         {/* Rear Left Wheel */}
-        <group position={[-cfg.wheelX * 1.2, cfg.axleY, cfg.rearAxleZ * 1.2]} rotation={[0, Math.PI / 2, 0]}>
+        <group position={[-cfg.wheelX * 1.2, cfg.axleY, cfg.rearAxleZ * 1.56]} rotation={[0, Math.PI / 2, 0]}>
           <WheelAsset 
             isFront={false} 
             side="left"
@@ -267,7 +266,7 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
         </group>
         
         {/* Rear Right Wheel */}
-        <group position={[cfg.wheelX * 1.2, cfg.axleY, cfg.rearAxleZ * 1.2]} rotation={[0, -Math.PI / 2, 0]}>
+        <group position={[cfg.wheelX * 1.2, cfg.axleY, cfg.rearAxleZ * 1.56]} rotation={[0, -Math.PI / 2, 0]}>
           <WheelAsset 
             isFront={false} 
             side="right"
@@ -277,12 +276,6 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
         </group>
       </group>
 
-      {/* Spare Wheel (Step 12: Falls last to lock onto tailgate carrier) */}
-      <group ref={spareWheelRef}>
-        <group position={[0, 0.8 * 1.2 - 0.076, -1.48 * 1.2]} rotation={[0, Math.PI, 0]}>
-          <WheelAsset isFront={false} isStatic={true} />
-        </group>
-      </group>
     </group>
   );
 }
