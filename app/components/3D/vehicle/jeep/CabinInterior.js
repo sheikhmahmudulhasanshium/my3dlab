@@ -22,7 +22,10 @@ export default function CabinInterior({ cfg, materials, engineOn, steeringAngleR
   return (
     <group>
       {/* --- 1. Dashboard & Compact Instruments --- */}
-      <mesh position={[0, 0.98, 0.90]} castShadow><boxGeometry args={[1.38, 0.18, 0.24]} />{materials.darkPlastic}</mesh>
+      <mesh position={[0, 0.98, 0.90]} castShadow>
+        <boxGeometry args={[1.38, 0.18, 0.24]} />
+        {materials.darkPlastic}
+      </mesh>
 
       {/* Compact Instrument Cluster Backplate */}
       <mesh position={[-0.35, 1.01, 0.78]} castShadow>
@@ -126,9 +129,9 @@ export default function CabinInterior({ cfg, materials, engineOn, steeringAngleR
       </group>
 
 
-      {/* --- 4. Symmetrical Front Bucket Seats --- */}
+      {/* --- 4. Symmetrical Front Bucket Seats (Optimized Z = 0.38) --- */}
       {[-1, 1].map((xSign) => (
-        <group key={xSign} position={[xSign * cfg.seatX, 0.53, 0.05]}>
+        <group key={xSign} position={[xSign * cfg.seatX, 0.53, 0.38]}>
           <mesh position={[0, -0.06, 0]} castShadow>
             <boxGeometry args={[0.3, 0.08, 0.3]} />
             {materials.darkPlastic}
@@ -149,10 +152,16 @@ export default function CabinInterior({ cfg, materials, engineOn, steeringAngleR
       ))}
 
 
-      {/* --- 5. Rear Passenger Seat Bench --- */}
-      <group position={[0, 0.53, -0.55]}>
-        <mesh castShadow><boxGeometry args={[1.0, 0.14, 0.44]} />{materials.leatherSeats}</mesh>
-        <mesh position={[0, 0.3, -0.19]} rotation={[-0.1, 0, 0]} castShadow><boxGeometry args={[1.0, 0.52, 0.10]} />{materials.leatherSeats}</mesh>
+      {/* --- 5. Rear Passenger Seat Bench (Optimized Z = -0.32) --- */}
+      <group position={[0, 0.53, -0.32]}>
+        <mesh castShadow>
+          <boxGeometry args={[1.0, 0.14, 0.44]} />
+          {materials.leatherSeats}
+        </mesh>
+        <mesh position={[0, 0.3, -0.19]} rotation={[-0.1, 0, 0]} castShadow>
+          <boxGeometry args={[1.0, 0.52, 0.10]} />
+          {materials.leatherSeats}
+        </mesh>
       </group>
     </group>
   );

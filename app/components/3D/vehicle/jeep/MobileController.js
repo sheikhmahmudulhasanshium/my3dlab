@@ -1,158 +1,264 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 
 export default function MobileController({ 
-  engineOn, 
+  engineOn = false, 
   setEngineOn, 
-  onControlChange 
+  mobileControlsRef,
+  uiSteeringWheelRef,
+  activeGear = "D",
+  setActiveGear,
+  lazySusanOn = false,
+  onToggleShowroom
 }) {
-  const [activeGear, setActiveGear] = useState("N"); // P, R, N, D
-  const [accelerating, setAccelerating] = useState(false);
-  const [braking, setBraking] = useState(false);
-  const [steerValue, setSteerValue] = useState(0); // -1 (Left) to 1 (Right)
-
-  const trackRef = useRef(null);
+  const wheelTrackRef = useRef(null);
   const isTrackingSteer = useRef(false);
 
-  // Send control updates back to the parent animation loop
-  useEffect(() => {
-    if (onControlChange) {
-      onControlChange({
-        steering: steerValue,
-        accelerate: accelerating,
-        brake: braking,
-        gear: activeGear,
-        engineOn: engineOn
-      });
+  // Send control updates back to the parent animation loop (Memoized)
+  const updateControls = useCallback((updates) => {
+    if (mobileControlsRef?.current) {
+      mobileControlsRef.current = {
+        ...mobileControlsRef.current,
+        ...updates
+      };
     }
-  }, [steerValue, accelerating, braking, activeGear, engineOn, onControlChange]);
+  }, [mobileControlsRef]);
 
-  // Handle Steering Touch Input
-  const handleSteerTouchStart = (e) => {
-    isTrackingSteer.current = true;
-    handleSteerTouchMove(e);
+  const handlePressGas = (active) => {
+    updateControls({ accelerate: active });
   };
 
-  const handleSteerTouchMove = (e) => {
-    if (!isTrackingSteer.current || !trackRef.current) return;
-    
-    const touch = e.touches[0];
-    const rect = trackRef.current.getBoundingClientRect();
-    
-    // Calculate relative horizontal position inside the slider track (0 to 1)
-    let relativeX = (touch.clientX - rect.left) / rect.width;
-    relativeX = Math.max(0, Math.min(1, relativeX)); // Clamp between 0 and 1
-    
-    // Map to -1 (left) to 1 (right)
-    const rawSteerValue = (relativeX - 0.5) * 2;
-    setSteerValue(parseFloat(rawSteerValue.toFixed(2)));
+  const handlePressBrake = (active) => {
+    updateControls({ brake: active });
   };
 
-  const handleSteerTouchEnd = () => {
+  const handleGearSelect = (gear) => {
+    if (typeof setActiveGear === "function") {
+      setActiveGear(gear);
+    }
+  };
+
+  const handleEngineToggle = () => {
+    if (typeof setEngineOn === "function") {
+      setEngineOn(!engineOn);
+    }
+  };
+
+  // Sync state changes with parent ref
+  useEffect(() => {
+    updateControls({ 
+      gear: activeGear,
+      engineOn: engineOn
+    });
+  }, [activeGear, engineOn, updateControls]);
+
+  // Polar angle calculation for the visual steering wheel
+  const getSteeringFromTouch = useCallback((clientX, clientY) => {
+    if (!wheelTrackRef.current) return { normalizedValue: 0, degrees: 0 };
+    const rect = wheelTrackRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    const dx = clientX - centerX;
+    const dy = clientY - centerY;
+    
+    let angle = Math.atan2(dy, dx) + Math.PI / 2;
+    
+    if (angle > Math.PI) angle -= Math.PI * 2;
+    if (angle <= -Math.PI) angle += Math.PI * 2;
+
+    const maxRotationRad = 140 * (Math.PI / 180);
+    const clampedAngle = Math.max(-maxRotationRad, Math.min(maxRotationRad, angle));
+
+    const normalizedValue = parseFloat((clampedAngle / maxRotationRad).toFixed(2));
+    const degrees = clampedAngle * (180 / Math.PI);
+
+    return { normalizedValue, degrees };
+  }, []);
+
+  // Universal handler for both mouse and touch moves
+  const handleSteerMove = useCallback((e) => {
+    if (!isTrackingSteer.current) return;
+    
+    // Support touch objects and mouse pointers simultaneously
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const { normalizedValue, degrees } = getSteeringFromTouch(clientX, clientY);
+    updateControls({ steering: normalizedValue, isDragging: true });
+
+    if (uiSteeringWheelRef?.current) {
+      uiSteeringWheelRef.current.style.transform = `rotate(${degrees}deg)`;
+    }
+  }, [getSteeringFromTouch, updateControls, uiSteeringWheelRef]);
+
+  const handleSteerEnd = useCallback(() => {
     isTrackingSteer.current = false;
-    setSteerValue(0); // Reset steering to center when released
+    updateControls({ steering: 0, isDragging: false });
+  }, [updateControls]);
+
+  const handleSteerStart = (e) => {
+    isTrackingSteer.current = true;
+    updateControls({ isDragging: true });
+    handleSteerMove(e);
   };
+
+  // Global window listeners to capture pointer moves out-of-bounds seamlessly
+  useEffect(() => {
+    const handleGlobalMove = (e) => {
+      handleSteerMove(e);
+    };
+
+    const handleGlobalEnd = () => {
+      if (isTrackingSteer.current) {
+        handleSteerEnd();
+      }
+    };
+
+    window.addEventListener("mousemove", handleGlobalMove);
+    window.addEventListener("mouseup", handleGlobalEnd);
+    window.addEventListener("touchmove", handleGlobalMove, { passive: true });
+    window.addEventListener("touchend", handleGlobalEnd);
+
+    return () => {
+      window.removeEventListener("mousemove", handleGlobalMove);
+      window.removeEventListener("mouseup", handleGlobalEnd);
+      window.removeEventListener("touchmove", handleGlobalMove);
+      window.removeEventListener("touchend", handleGlobalEnd);
+    };
+  }, [handleSteerMove, handleSteerEnd]);
+
+  // Universal cross-platform buttons handlers
+  const onGasStart = () => handlePressGas(true);
+  const onGasEnd = () => handlePressGas(false);
+
+  const onBrakeStart = () => handlePressBrake(true);
+  const onBrakeEnd = () => handlePressBrake(false);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 p-4 md:p-6 select-none touch-none pointer-events-none lg:hidden flex flex-col justify-end h-48 bg-linear-to-t from-slate-950/80 to-transparent">
+    <div className="fixed inset-0 z-50 pointer-events-none lg:hidden flex justify-between items-end p-6 select-none touch-none">
       
-      {/* Top Row: Engine switch & Gear Selectors */}
-      <div className="flex justify-between items-center w-full mb-4 pointer-events-auto">
-        
-        {/* Gear Box (P, R, N, D) */}
-        <div className="flex gap-1.5 bg-slate-900/80 border border-slate-700/50 p-1.5 rounded-xl">
-          {["P", "R", "N", "D"].map((gear) => (
-            <button
-              key={gear}
-              className={`w-10 h-10 rounded-lg text-sm font-bold flex items-center justify-center transition-all ${
-                activeGear === gear
-                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/30"
-                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
-              }`}
-              onClick={() => setActiveGear(gear)}
-            >
-              {gear}
-            </button>
-          ))}
-        </div>
-
-        {/* Engine Toggle Button (ON/OFF) */}
-        <button
-          className={`px-4 py-2.5 rounded-xl font-semibold text-xs border uppercase tracking-wider transition-all flex items-center gap-2 ${
-            engineOn
-              ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
-              : "bg-rose-500/20 border-rose-500 text-rose-400"
-          }`}
-          onClick={() => setEngineOn(!engineOn)}
+      {/* LEFT SIDE: Steering Wheel Area */}
+      <div className="flex flex-col items-center gap-2 pointer-events-auto">
+        <div
+          ref={wheelTrackRef}
+          onTouchStart={handleSteerStart}
+          onMouseDown={handleSteerStart}
+          className="relative w-36 h-36 md:w-40 md:h-40 rounded-full bg-slate-950/40 border border-slate-700/30 flex items-center justify-center cursor-grab active:cursor-grabbing shadow-2xl backdrop-blur-xs"
         >
-          <span className={`w-2.5 h-2.5 rounded-full ${engineOn ? "bg-emerald-400 animate-pulse" : "bg-rose-400"}`} />
-          {engineOn ? "Engine On" : "Engine Off"}
-        </button>
-      </div>
-
-      {/* Bottom Row: Slider Control (Left Side) & Action Buttons (Right Side) */}
-      <div className="flex justify-between items-center w-full pointer-events-auto">
-        
-        {/* Left Side: Steering Slider Control */}
-        <div className="flex flex-col gap-1 items-center">
+          {/* Rotating Ring */}
           <div 
-            ref={trackRef}
-            onTouchStart={handleSteerTouchStart}
-            onTouchMove={handleSteerTouchMove}
-            onTouchEnd={handleSteerTouchEnd}
-            className="w-48 h-12 bg-slate-900/80 border border-slate-700/50 rounded-2xl relative flex items-center cursor-pointer"
+            ref={uiSteeringWheelRef}
+            className="absolute inset-2 rounded-full border-4 border-slate-600 flex items-center justify-center transition-transform duration-75 ease-out"
+            style={{ transform: "rotate(0deg)" }}
           >
-            {/* Center reference notch */}
-            <div className="absolute left-1/2 -translate-x-1/2 w-0.5 h-6 bg-slate-700/50" />
+            <div className="absolute top-0 w-1.5 h-4 bg-sky-500 rounded-b-sm" />
+            <div className="w-full h-1 bg-slate-600" />
+            <div className="absolute bottom-0 w-1 h-14 bg-slate-600" />
             
-            {/* Slideable Joystick Knob */}
-            <div 
-              style={{ left: `calc(${(steerValue + 1) * 50}% - 20px)` }}
-              className="absolute w-10 h-10 bg-sky-500 hover:bg-sky-400 rounded-xl flex items-center justify-center shadow-lg shadow-sky-500/30 border border-sky-300/20 transition-shadow duration-100"
-            >
-              <span className="text-white text-lg font-bold select-none">↔</span>
+            <div className="absolute w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-inner">
+              <span className="text-[9px] font-black text-slate-400">JEEP</span>
             </div>
           </div>
-          <span className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Steering</span>
         </div>
-
-        {/* Right Side: [B] Brake and [A] Gas Action Buttons */}
-        <div className="flex gap-4">
-          {/* Button B (Brake) */}
-          <div className="flex flex-col items-center gap-1">
-            <button
-              onTouchStart={() => setBraking(true)}
-              onTouchEnd={() => setBraking(false)}
-              className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-lg font-black transition-all ${
-                braking
-                  ? "bg-rose-500 text-white border-rose-400 scale-95 shadow-lg shadow-rose-500/30"
-                  : "bg-slate-900 text-rose-400 border-rose-500/30 hover:bg-slate-800"
-              }`}
-            >
-              B
-            </button>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Brake</span>
-          </div>
-
-          {/* Button A (Accelerate) */}
-          <div className="flex flex-col items-center gap-1">
-            <button
-              onTouchStart={() => setAccelerating(true)}
-              onTouchEnd={() => setAccelerating(false)}
-              className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-lg font-black transition-all ${
-                accelerating
-                  ? "bg-emerald-500 text-white border-emerald-400 scale-95 shadow-lg shadow-emerald-500/30"
-                  : "bg-slate-900 text-emerald-400 border-emerald-500/30 hover:bg-slate-800"
-              }`}
-            >
-              A
-            </button>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Gas</span>
-          </div>
-        </div>
-
+        <span className="text-[10px] text-slate-300 font-bold uppercase tracking-widest bg-slate-950/60 px-3 py-1 rounded-full border border-slate-800/80">
+          Steer
+        </span>
       </div>
+
+      {/* RIGHT SIDE: Vertical Dashboard Console Panel */}
+      <div className="flex flex-col gap-4 pointer-events-auto items-end">
+        <div className="flex gap-4 items-start bg-slate-950/85 border border-slate-800/80 p-3.5 rounded-3xl shadow-2xl backdrop-blur-md">
+          
+          {/* Shifter Gear Panel */}
+          <div className="flex flex-col gap-1.5 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800/50">
+            {["P", "R", "N", "D"].map((gear) => (
+              <button
+                key={gear}
+                type="button"
+                onClick={() => handleGearSelect(gear)}
+                className={`w-9 h-9 rounded-xl text-xs font-black flex items-center justify-center transition-all ${
+                  activeGear === gear
+                    ? "bg-sky-500 text-white shadow-lg shadow-sky-500/45"
+                    : "bg-slate-800 text-slate-400 hover:bg-slate-700 active:scale-95"
+                }`}
+              >
+                {gear}
+              </button>
+            ))}
+          </div>
+
+          {/* Action Columns */}
+          <div className="flex flex-col gap-3 justify-between h-full">
+            <div className="flex flex-col gap-1.5">
+              {/* Ignition Toggle */}
+              <button
+                type="button"
+                onClick={handleEngineToggle}
+                className={`p-2.5 rounded-xl border text-[9px] font-extrabold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                  engineOn
+                    ? "bg-emerald-500/10 border-emerald-500 text-emerald-400"
+                    : "bg-rose-500/10 border-rose-500 text-rose-400"
+                }`}
+              >
+                <span className={`w-2.5 h-2.5 rounded-full ${engineOn ? "bg-emerald-400 animate-pulse" : "bg-rose-400"}`} />
+                {engineOn ? "ON" : "OFF"}
+              </button>
+
+              {/* Showroom Exhibition */}
+              <button
+                type="button"
+                onClick={onToggleShowroom}
+                className={`p-2.5 rounded-xl border text-[9px] font-extrabold uppercase tracking-wider transition-all flex items-center justify-center gap-1 ${
+                  lazySusanOn
+                    ? "bg-amber-500/20 border-amber-500 text-amber-400"
+                    : "bg-slate-800/80 border-slate-700/50 text-slate-400 hover:bg-slate-700"
+                }`}
+              >
+                ↺ SHOW
+              </button>
+            </div>
+
+            {/* Split Horizontal Pedals [BRAKE] [GAS] */}
+            <div className="flex gap-2.5 items-end justify-end">
+              {/* Brake Button (B) - Realistic Wider Layout */}
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  type="button"
+                  onTouchStart={onBrakeStart}
+                  onTouchEnd={onBrakeEnd}
+                  onTouchCancel={onBrakeEnd}
+                  onMouseDown={onBrakeStart}
+                  onMouseUp={onBrakeEnd}
+                  onMouseLeave={onBrakeEnd}
+                  className="w-16 h-14 rounded-xl border text-xs font-black flex items-center justify-center transition-all bg-slate-800/80 text-rose-400 border-rose-500/30 active:bg-rose-500 active:text-white"
+                >
+                  BRAKE
+                </button>
+              </div>
+
+              {/* Gas Button (A) - Realistic Narrower/Taller Layout */}
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  type="button"
+                  onTouchStart={onGasStart}
+                  onTouchEnd={onGasEnd}
+                  onTouchCancel={onGasEnd}
+                  onMouseDown={onGasStart}
+                  onMouseUp={onGasEnd}
+                  onMouseLeave={onGasEnd}
+                  className="w-12 h-16 rounded-xl border text-xs font-black flex items-center justify-center transition-all bg-slate-800/80 text-emerald-400 border-emerald-500/30 active:bg-emerald-500 active:text-white"
+                >
+                  GAS
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   );
 }

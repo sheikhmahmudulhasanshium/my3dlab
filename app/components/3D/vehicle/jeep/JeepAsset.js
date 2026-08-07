@@ -8,6 +8,7 @@ import WheelAsset from "./WheelAsset";
 // Sub-module Imports
 import ChassisFrame from "./ChassisFrame";
 import BodyPanels from "./BodyPanels";
+import Doors from "./Doors"; // Imported interactive doors sub-module
 import FenderGuards from "./FenderGuards";
 import WinchBumper from "./WinchBumper";
 import FrontGrille from "./FrontGrille";
@@ -16,6 +17,7 @@ import CabinInterior from "./CabinInterior";
 import RollCage from "./RollCage";
 import Headlights from "./Headlights";
 import LicensePlate from "./LicensePlate";
+import EngineBonnet from "./EngineBonnet";
 
 // Parametric Height and Track Offsets
 const JEEP_CONFIG = {
@@ -40,11 +42,21 @@ const JEEP_CONFIG = {
   cageTopY: 1.56,        
 };
 
-export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef, color }) {
+export default function JeepAsset({ 
+  engineOn, 
+  steeringAngleRef, 
+  wheelRotationRef, 
+  color,
+  // Added optional controls for tail-lights / indicator states
+  isBraking = false,
+  areLightsOn = false,
+  indicator = "off", // 'off' | 'left' | 'right' | 'hazard'
+  isReversing = false
+}) {
   const cfg = JEEP_CONFIG;
   const [visibleStep, setVisibleStep] = useState(0);
 
-  // References to directly update the 3D matrices of each module at 60fps
+  // References to update the 3D matrices of each module
   const wheelsRef = useRef(null);
   const chassisRef = useRef(null);
   const bumperRef = useRef(null);
@@ -52,43 +64,46 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
   const bodyRef = useRef(null);
   const fenderRef = useRef(null);
   const grilleRef = useRef(null);
+  const bonnetRef = useRef(null);      
   const headlightsRef = useRef(null);
   const plateRef = useRef(null);
   const windshieldRef = useRef(null);
   const cageRef = useRef(null);
   const spareWheelRef = useRef(null);
 
-  // GROUND-UP ASSEMBLY ORDER (12 Progressive Steps)
+  // GROUND-UP ASSEMBLY ORDER (13 Progressive Steps)
   const moduleRefs = useMemo(() => [
     wheelsRef,       // Step 1: Active Wheels land on ground
     chassisRef,      // Step 2: Chassis, Axles & Suspension mount onto wheels
     bumperRef,       // Step 3: Front Steel Bumper
     interiorRef,     // Step 4: Floorboards, Seats, Dashboard
     bodyRef,         // Step 5: Side Panels, Tailgate & Doors
-    fenderRef,       // Step 6: Peaked Fender Flares (lowered near tires)
-    grilleRef,       // Step 7: Grille & Engine Hood
-    headlightsRef,   // Step 8: Headlamps & Spotlights
-    plateRef,        // Step 9: Tailgate License Plate
-    windshieldRef,   // Step 10: Clear Windshield & hollow frame
-    cageRef,         // Step 11: Steel Tubing Safety Cage
-    spareWheelRef    // Step 12: Spare Wheel drops onto tailgate carrier
+    fenderRef,       // Step 6: Peaked Fender Flares
+    grilleRef,       // Step 7: Front Grille Panel
+    bonnetRef,       // Step 8: Engine Bonnet (Hood)
+    headlightsRef,   // Step 9: Headlamps & Spotlights
+    plateRef,        // Step 10: Tailgate License Plate
+    windshieldRef,   // Step 11: Clear Windshield & Frame
+    cageRef,         // Step 12: Steel Tubing Safety Cage
+    spareWheelRef    // Step 13: Spare Wheel drops onto tailgate carrier
   ], []);
 
   // Cascading drop timer (timed sequence in ms)
   useEffect(() => {
     const sequenceDelays = [
-      350, // Step 1: Active Wheels land
-      220, // Step 2: Chassis Frame drops
+      350, // Step 1: Active Wheels
+      220, // Step 2: Chassis Frame
       180, // Step 3: Winch Bumper
       180, // Step 4: Cabin Interior
-      180, // Step 5: Body Panels
+      180, // Step 5: Body Panels (Skins, Stationary Plates, and Doors)
       180, // Step 6: Fender Flares
       180, // Step 7: Front Grille
-      180, // Step 8: Headlights
-      150, // Step 9: License Plate
-      180, // Step 10: Windshield
-      200, // Step 11: Roll Cage
-      250, // Step 12: Spare Wheel mounts on back
+      180, // Step 8: Engine Bonnet
+      180, // Step 9: Headlights
+      150, // Step 10: License Plate
+      180, // Step 11: Windshield
+      200, // Step 12: Roll Cage
+      250, // Step 13: Spare Wheel
     ];
 
     let currentStep = 0;
@@ -113,13 +128,13 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
 
   // Performance matrix frame loop
   useFrame((state, delta) => {
-    const limitDelta = Math.min(0.1, delta); // Cap delta to prevent matrix overflow on lag spikes
+    const limitDelta = Math.min(0.1, delta);
     
     moduleRefs.forEach((ref, index) => {
       const group = ref.current;
       if (!group) return;
 
-      const stepIndex = index + 1; // 1-based indexing for steps
+      const stepIndex = index + 1;
 
       if (visibleStep >= stepIndex) {
         group.visible = true;
@@ -130,7 +145,7 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
       } else {
         group.visible = false;
         group.scale.set(0, 0, 0);
-        group.position.y = 3.5; // Starts at X units above ground
+        group.position.y = 3.5; // Dropping start height
       }
     });
   });
@@ -178,15 +193,27 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
 
   return (
     <group>
-      {/* CORRECTED: position.y adjusted from -0.167 to -0.067 to raise the body 10% vertically */}
       <group scale={[1.2, 1.44, 1.56]} position={[0, -0.067, 0]}>
         
         <group ref={chassisRef}>
           <ChassisFrame cfg={cfg} materials={materials} />
         </group>
         
+        {/* Step 5: Both the body panels (with stationary taillights) and the active doors drop together */}
         <group ref={bodyRef}>
-          <BodyPanels cfg={cfg} materials={materials} spareWheelRef={spareWheelRef} />
+          <BodyPanels 
+            cfg={cfg} 
+            materials={materials} 
+            isBraking={isBraking}
+            areLightsOn={areLightsOn}
+            indicator={indicator}
+            isReversing={isReversing}
+          />
+          <Doors 
+            cfg={cfg} 
+            materials={materials} 
+            spareWheelRef={spareWheelRef} 
+          />
         </group>
         
         <group ref={fenderRef}>
@@ -199,6 +226,10 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
         
         <group ref={grilleRef}>
           <FrontGrille cfg={cfg} materials={materials} />
+        </group>
+
+        <group ref={bonnetRef}>
+          <EngineBonnet cfg={cfg} materials={materials} />
         </group>
         
         <group ref={windshieldRef}>
@@ -231,7 +262,7 @@ export default function JeepAsset({ engineOn, steeringAngleRef, wheelRotationRef
 
       </group>
 
-      {/* --- Active Wheels (Remain at ground level) --- */}
+      {/* --- Active Wheels --- */}
       <group ref={wheelsRef}>
         {/* Front Left Wheel */}
         <group position={[-cfg.wheelX * 1.2, cfg.axleY, cfg.frontAxleZ * 1.56]} rotation={[0, Math.PI / 2, 0]}>
