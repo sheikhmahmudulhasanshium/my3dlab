@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { useTheme } from "next-themes";
 import * as THREE from "three";
 
 import JeepAsset from "../../components/3D/vehicle/jeep/JeepAsset";
@@ -11,7 +12,15 @@ import MobileController from "../../components/3D/vehicle/jeep/MobileController"
 import { useKeyboard } from "../../components/3D/vehicle/jeep/KeyboardController";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-// --- Dynamic physics and camera scale controller ---
+// Subscriptions and snapshot getters for useSyncExternalStore to detect hydration status
+const emptySubscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
+
+function useIsMounted() {
+  return useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
+}
+
 function DrivingController({ 
   engineOn, 
   setEngineOn, 
@@ -59,7 +68,6 @@ function DrivingController({
     const car = jeepGroupRef.current;
     if (!car) return;
 
-    // Calculate Aspect Ratio zoom factor dynamically (Safe for native mobile fullscreen)
     const aspect = state.size.width / state.size.height;
     const responsiveZoomFactor = aspect < 1.0 ? Math.max(1.0, 1.0 / aspect) : 1.0;
 
@@ -71,7 +79,6 @@ function DrivingController({
       car.rotation.y += delta * 0.25;
       car.position.set(0, 0, 0);
 
-      // Dynamically scale the Showroom radius and height to prevent car from overflowing in portrait
       const showroomRadius = 7.2 * responsiveZoomFactor;
       const showroomHeight = 3.2 * responsiveZoomFactor;
 
@@ -96,7 +103,6 @@ function DrivingController({
     let isBraking = false;
     let isTurbo = accelerateActive;
 
-    // Read keyboard controls
     const keys = keysPressed.current;
     if (keys["ArrowUp"]) {
       syncReactGearState("D");
@@ -111,12 +117,10 @@ function DrivingController({
       }
     }
     
-    // Read keyboard steering
     let keyboardSteer = 0;
     if (keys["ArrowLeft"]) keyboardSteer = 1;
     if (keys["ArrowRight"]) keyboardSteer = -1;
 
-    // Read mobile controls (mixed simultaneously with physical keyboard)
     const mobile = mobileControlsRef.current;
     let mobileSteer = 0;
     let isMobileDragging = false;
@@ -135,25 +139,19 @@ function DrivingController({
       }
     }
 
-    // Combine Steering Inputs
     if (keyboardSteer !== 0) {
       steerInput = keyboardSteer;
     } else {
       steerInput = mobileSteer;
     }
 
-    // Power steering calculations
     const targetSteerAngle = steerInput * 0.45;
     physics.current.steeringAngle += (targetSteerAngle - physics.current.steeringAngle) * 8.0 * delta;
     steeringRef.current = physics.current.steeringAngle;
 
-    // Smooth UI steering wheel return-to-center physics (Auto-focus on release)
     if (uiSteeringWheelRef.current) {
-      if (isMobileDragging && keyboardSteer === 0) {
-        // Hand is actively dragging the mobile wheel - keep absolute real-time hand coordinates
-      } else {
-        // Physics return calculations: smoothly transition the UI wheel back to center or follow active keys
-        const steeringRatio = physics.current.steeringAngle / 0.45; // -1 to +1
+      if (!isMobileDragging || keyboardSteer !== 0) {
+        const steeringRatio = physics.current.steeringAngle / 0.45; 
         const uiRotationDegrees = -steeringRatio * 140; 
         uiSteeringWheelRef.current.style.transform = `rotate(${uiRotationDegrees}deg)`;
       }
@@ -219,7 +217,6 @@ function DrivingController({
       });
     }
 
-    // Camera aspect responsive offsets for driving mode
     const targetCameraPosition = new THREE.Vector3(
       physics.current.x - Math.sin(physics.current.angle) * (6.2 * responsiveZoomFactor),
       physics.current.y + (3.0 * responsiveZoomFactor),
@@ -246,8 +243,13 @@ function DrivingController({
   );
 }
 
-// --- Main Page Component ---
 export default function SceneFourPage() {
+  const { resolvedTheme, setTheme } = useTheme();
+  
+  // Safely check client render status without cascading effects
+  const isMounted = useIsMounted();
+  const isDark = isMounted ? resolvedTheme === "dark" : true;
+
   const [engineOn, setEngineOn] = useState(false);
   const [lazySusanOn, setLazySusanOn] = useState(false);
   const [accelerateActive, setAccelerateActive] = useState(false);
@@ -315,23 +317,30 @@ export default function SceneFourPage() {
   }, [handleToggleShowroom]);
 
   return (
-    <main ref={containerRef} className="relative min-h-screen w-screen overflow-hidden bg-slate-950 transition-colors duration-200">
+    <main 
+      ref={containerRef} 
+      className={`relative min-h-screen w-screen overflow-hidden transition-colors duration-300 ${
+        isDark ? "bg-slate-950 text-white" : "bg-slate-200 text-slate-900"
+      }`}
+    >
       
-      {/* 3D Canvas */}
+      {/* 3D Canvas Layer */}
       <div className="absolute inset-0 z-0">
         <Canvas 
           camera={{ position: [0, 5, 8], fov: 60 }} 
           shadows={{ type: THREE.PCFShadowMap }}
         >
-          <ambientLight intensity={0.4} />
+          <color attach="background" args={[isDark ? "#0a0f1d" : "#e2e8f0"]} />
+
+          <ambientLight intensity={isDark ? 0.35 : 0.65} />
           <directionalLight 
             position={[15, 20, 15]} 
-            intensity={1.5} 
+            intensity={isDark ? 1.5 : 1.8} 
             castShadow 
             shadow-mapSize-width={1024} 
             shadow-mapSize-height={1024} 
           />
-          <pointLight position={[-10, 10, -10]} intensity={0.4} />
+          <pointLight position={[-10, 10, -10]} intensity={isDark ? 0.4 : 0.6} />
 
           <DrivingController 
             engineOn={engineOn}
@@ -348,16 +357,20 @@ export default function SceneFourPage() {
             setActiveGear={setActiveGear}
           />
 
-          <GridCompass />
+          <GridCompass isDark={isDark} />
 
           <OrbitControls enabled={lazySusanOn} enableZoom={true} enablePan={false} maxPolarAngle={Math.PI / 2.1} />
         </Canvas>
       </div>
 
-      {/* Desktop HUD Guide Card */}
+      {/* HTML Overlay layers */}
       {!lazySusanOn && (
         <div className="absolute inset-x-0 bottom-0 z-10 hidden lg:flex p-12 pointer-events-none justify-end">
-          <Card className="pointer-events-auto w-full max-w-sm border-slate-800 bg-slate-900/60 backdrop-blur-md text-white shadow-lg">
+          <Card className={`pointer-events-auto w-full max-w-sm border backdrop-blur-md shadow-lg transition-colors duration-200 ${
+            isDark 
+              ? "border-slate-800 bg-slate-900/60 text-white" 
+              : "border-slate-300 bg-white/70 text-slate-900"
+          }`}>
             <CardHeader className="p-5">
               <CardTitle className="text-base font-semibold flex justify-between items-center">
                 <span>Jeep Wrangler 3D</span>
@@ -365,38 +378,54 @@ export default function SceneFourPage() {
                   {engineOn ? "Engine Running" : "Engine Off"}
                 </span>
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                 Drive or exhibit your interactive vehicle model.
               </CardDescription>
             </CardHeader>
             
             <CardContent className="px-5 pb-4 space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-2 border-y border-slate-800 py-3">
+              <div className={`grid grid-cols-2 gap-2 border-y py-3 ${isDark ? "border-slate-800" : "border-slate-200"}`}>
                 <div>
-                  <span className="font-semibold block text-slate-400 text-[10px] uppercase">Steering & Drive</span>
-                  <span className="font-mono text-xs text-sky-400">Arrow Keys</span>
+                  <span className={`font-semibold block text-[10px] uppercase ${isDark ? "text-slate-400" : "text-slate-500"}`}>Steering & Drive</span>
+                  <span className="font-mono text-xs text-sky-500">Arrow Keys</span>
                 </div>
                 <div>
-                  <span className="font-semibold block text-slate-400 text-[10px] uppercase">Ignition Toggle</span>
-                  <span className="font-mono text-xs text-sky-400">[S] key</span>
+                  <span className={`font-semibold block text-[10px] uppercase ${isDark ? "text-slate-400" : "text-slate-500"}`}>Ignition Toggle</span>
+                  <span className="font-mono text-xs text-sky-500">[S] key</span>
                 </div>
                 <div>
-                  <span className="font-semibold block text-slate-400 text-[10px] uppercase">Turbo Accel</span>
-                  <span className="font-mono text-xs text-sky-400">[Spacebar]</span>
+                  <span className={`font-semibold block text-[10px] uppercase ${isDark ? "text-slate-400" : "text-slate-500"}`}>Turbo Accel</span>
+                  <span className="font-mono text-xs text-sky-500">[Spacebar]</span>
                 </div>
                 <div>
-                  <span className="font-semibold block text-slate-400 text-[10px] uppercase">Showroom Mode</span>
-                  <span className="font-mono text-xs text-sky-400">[L] key</span>
+                  <span className={`font-semibold block text-[10px] uppercase ${isDark ? "text-slate-400" : "text-slate-500"}`}>Showroom Mode</span>
+                  <span className="font-mono text-xs text-sky-500">[L] key</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase">Body Paint</span>
-                <div className="flex gap-1.5">
-                  <button className="w-5 h-5 rounded-full bg-amber-500 border border-slate-700" onClick={() => setColor("#fbbf24")} />
-                  <button className="w-5 h-5 rounded-full bg-red-600 border border-slate-700" onClick={() => setColor("#dc2626")} />
-                  <button className="w-5 h-5 rounded-full bg-sky-500 border border-slate-700" onClick={() => setColor("#0ea5e9")} />
-                  <button className="w-5 h-5 rounded-full bg-emerald-600 border border-slate-700" onClick={() => setColor("#059669")} />
+                <div className="flex flex-col gap-0.5">
+                  <span className={`text-[10px] font-semibold uppercase ${isDark ? "text-slate-400" : "text-slate-500"}`}>Paint Job</span>
+                  <div className="flex gap-1 mt-1">
+                    <button className="w-5 h-5 rounded-full bg-amber-500 border border-slate-700" onClick={() => setColor("#fbbf24")} />
+                    <button className="w-5 h-5 rounded-full bg-red-600 border border-slate-700" onClick={() => setColor("#dc2626")} />
+                    <button className="w-5 h-5 rounded-full bg-sky-500 border border-slate-700" onClick={() => setColor("#0ea5e9")} />
+                    <button className="w-5 h-5 rounded-full bg-emerald-600 border border-slate-700" onClick={() => setColor("#059669")} />
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-1">
+                  <span className={`text-[10px] font-semibold uppercase ${isDark ? "text-slate-400" : "text-slate-500"}`}>Theme</span>
+                  <button
+                    onClick={() => setTheme(isDark ? "light" : "dark")}
+                    className={`mt-1 px-3 py-1 text-[11px] font-bold rounded-lg border transition-all ${
+                      isDark 
+                        ? "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700" 
+                        : "bg-slate-200 border-slate-300 text-slate-800 hover:bg-slate-300"
+                    }`}
+                  >
+                    {isDark ? "☀ Light" : "☽ Dark"}
+                  </button>
                 </div>
               </div>
             </CardContent>
@@ -404,7 +433,7 @@ export default function SceneFourPage() {
         </div>
       )}
 
-      {/* Exit Showroom / Fullscreen button */}
+      {/* Exit Showroom button */}
       {lazySusanOn && (
         <div className="absolute top-6 right-6 z-50 pointer-events-auto">
           <button
@@ -416,19 +445,24 @@ export default function SceneFourPage() {
         </div>
       )}
 
-      {/* Mobile HUD overlay */}
-      {!lazySusanOn && (
-        <MobileController 
-          engineOn={engineOn}
-          setEngineOn={setEngineOn}
-          mobileControlsRef={mobileControlsRef}
-          uiSteeringWheelRef={uiSteeringWheelRef}
-          activeGear={activeGear}
-          setActiveGear={setActiveGear}
-          lazySusanOn={lazySusanOn}
-          onToggleShowroom={handleToggleShowroom}
-        />
-      )}
+      {/* Mobile controller HUD layout */}
+{!lazySusanOn && (
+  <MobileController 
+    engineOn={engineOn}
+    setEngineOn={setEngineOn}
+    mobileControlsRef={mobileControlsRef}
+    uiSteeringWheelRef={uiSteeringWheelRef}
+    activeGear={activeGear}
+    setActiveGear={setActiveGear}
+    lazySusanOn={lazySusanOn}
+    onToggleShowroom={handleToggleShowroom}
+    // Connected mobile theme and paint color changer states
+    isDark={isDark}
+    onToggleTheme={() => setTheme(isDark ? "light" : "dark")}
+    color={color}
+    setColor={setColor}
+  />
+)}
     </main>
   );
 }

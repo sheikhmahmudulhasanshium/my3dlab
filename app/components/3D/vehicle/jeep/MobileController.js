@@ -10,7 +10,9 @@ export default function MobileController({
   activeGear = "D",
   setActiveGear,
   lazySusanOn = false,
-  onToggleShowroom
+  onToggleShowroom,
+  color,
+  setColor
 }) {
   const wheelTrackRef = useRef(null);
   const isTrackingSteer = useRef(false);
@@ -141,6 +143,31 @@ export default function MobileController({
       
       {/* LEFT SIDE: Steering Wheel Area */}
       <div className="flex flex-col items-center gap-2 pointer-events-auto">
+        
+        {/* Color Palette (Positioned cleanly above the steering wheel) */}
+        <div className="flex items-center gap-2 bg-slate-950/85 border border-slate-800/80 p-2 px-3 rounded-2xl shadow-xl backdrop-blur-xs mb-1">
+          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Paint</span>
+          <div className="flex gap-1.5">
+            {[
+              { hex: "#fbbf24", label: "Amber" },
+              { hex: "#dc2626", label: "Red" },
+              { hex: "#0ea5e9", label: "Sky" },
+              { hex: "#059669", label: "Emerald" }
+            ].map((opt) => (
+              <button
+                key={opt.hex}
+                type="button"
+                onClick={() => setColor?.(opt.hex)}
+                className={`w-5 h-5 rounded-full border transition-all ${
+                  color === opt.hex ? "scale-110 border-white ring-2 ring-sky-500/35" : "border-slate-800 scale-95"
+                }`}
+                style={{ backgroundColor: opt.hex }}
+                title={opt.label}
+              />
+            ))}
+          </div>
+        </div>
+
         <div
           ref={wheelTrackRef}
           onTouchStart={handleSteerStart}
@@ -222,7 +249,7 @@ export default function MobileController({
 
             {/* Split Horizontal Pedals [BRAKE] [GAS] */}
             <div className="flex gap-2.5 items-end justify-end">
-              {/* Brake Button (B) - Realistic Wider Layout */}
+              {/* Brake Button (B) */}
               <div className="flex flex-col items-center gap-1">
                 <button
                   type="button"
@@ -238,7 +265,7 @@ export default function MobileController({
                 </button>
               </div>
 
-              {/* Gas Button (A) - Realistic Narrower/Taller Layout */}
+              {/* Gas Button (A) */}
               <div className="flex flex-col items-center gap-1">
                 <button
                   type="button"

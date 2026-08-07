@@ -18,7 +18,7 @@ import RollCage from "./RollCage";
 import Headlights from "./Headlights";
 import LicensePlate from "./LicensePlate";
 import EngineBonnet from "./EngineBonnet";
-
+import Exhaust from "./Exhaust";
 // Parametric Height and Track Offsets
 const JEEP_CONFIG = {
   bodyHalfWidth: 0.70,   
@@ -70,7 +70,7 @@ export default function JeepAsset({
   const windshieldRef = useRef(null);
   const cageRef = useRef(null);
   const spareWheelRef = useRef(null);
-
+  const exhaustRef = useRef(null);
   // GROUND-UP ASSEMBLY ORDER (13 Progressive Steps)
   const moduleRefs = useMemo(() => [
     wheelsRef,       // Step 1: Active Wheels land on ground
@@ -179,7 +179,7 @@ export default function JeepAsset({
     const rearZDelta = Math.abs(cfg.bPillarZ - cfg.tailgateZ);
     const rearLength = Math.sqrt(rearHeight ** 2 + rearZDelta ** 2);
     const rearPitch = Math.atan2(rearZDelta, rearHeight);
-
+    
     return {
       cageWidth,
       aPillarLength,
@@ -261,7 +261,9 @@ export default function JeepAsset({
         </group>
 
       </group>
-
+      <group ref={exhaustRef}>
+        <Exhaust cfg={cfg} materials={materials} engineOn={engineOn} />
+      </group>
       {/* --- Active Wheels --- */}
       <group ref={wheelsRef}>
         {/* Front Left Wheel */}
