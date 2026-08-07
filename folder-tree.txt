@@ -8,6 +8,7 @@
  ┃ ┃ ┃ ┣ 📜CylinderAsset.js
  ┃ ┃ ┃ ┣ 📜FlatShapeAsset.js
  ┃ ┃ ┃ ┣ 📜mug.js
+ ┃ ┃ ┃ ┣ 📜sphere.js
  ┃ ┃ ┃ ┣ 📜SpokeTireAsset.js
  ┃ ┃ ┃ ┗ 📜TrafficConeAsset.js
  ┃ ┃ ┣ 📂sky
@@ -23,16 +24,48 @@
  ┃ ┃ ┃ ┣ 📜SakuraTree.js
  ┃ ┃ ┃ ┗ 📜TreeBranch.js
  ┃ ┃ ┗ 📂vehicle
- ┃ ┃ ┃ ┣ 📜JeepAsset.js
- ┃ ┃ ┃ ┣ 📜MobileController.js
- ┃ ┃ ┃ ┗ 📜WheelAsset.js
+ ┃ ┃ ┃ ┣ 📂jeep
+ ┃ ┃ ┃ ┃ ┣ 📜BodyPanels.js
+ ┃ ┃ ┃ ┃ ┣ 📜CabinInterior.js
+ ┃ ┃ ┃ ┃ ┣ 📜ChassisFrame.js
+ ┃ ┃ ┃ ┃ ┣ 📜Doors.js
+ ┃ ┃ ┃ ┃ ┣ 📜EngineBonnet.js
+ ┃ ┃ ┃ ┃ ┣ 📜Exhaust.js
+ ┃ ┃ ┃ ┃ ┣ 📜FenderGuards.js
+ ┃ ┃ ┃ ┃ ┣ 📜FrontGrille.js
+ ┃ ┃ ┃ ┃ ┣ 📜GridCompass.js
+ ┃ ┃ ┃ ┃ ┣ 📜Headlights.js
+ ┃ ┃ ┃ ┃ ┣ 📜JeepAsset.js
+ ┃ ┃ ┃ ┃ ┣ 📜KeyboardController.js
+ ┃ ┃ ┃ ┃ ┣ 📜LicensePlate.js
+ ┃ ┃ ┃ ┃ ┣ 📜MobileController.js
+ ┃ ┃ ┃ ┃ ┣ 📜RollCage.js
+ ┃ ┃ ┃ ┃ ┣ 📜WheelAsset.js
+ ┃ ┃ ┃ ┃ ┣ 📜WinchBumper.js
+ ┃ ┃ ┃ ┃ ┗ 📜Windshield.js
+ ┃ ┃ ┃ ┗ 📂suv
+ ┃ ┃ ┃ ┃ ┣ 📜BodyPanels.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜CabinInterior.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜CabinRoofShell.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜ChassisFrame.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜Doors.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜EngineBonnet.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜Exhaust.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜FenderGuards.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜FrontGrille.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜Headlights.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜LicensePlate.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜SUVAsset.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜suv_config.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜WheelAsset.jsx
+ ┃ ┃ ┃ ┃ ┣ 📜WinchBumper.jsx
+ ┃ ┃ ┃ ┃ ┗ 📜Windshield.jsx
  ┃ ┣ 📂button
  ┃ ┃ ┗ 📜theme-toggle.jsx
  ┃ ┣ 📂common
  ┃ ┃ ┗ 📜Navbar.jsx
- ┃ ┣ 📂providers
+ ┃ ┗ 📂providers
  ┃ ┃ ┗ 📜theme-provider.jsx
- ┃ ┗ 📜ThreeScene.jsx
  ┣ 📂scene
  ┃ ┣ 📂scene-1
  ┃ ┃ ┗ 📜page.js
@@ -48,8 +81,10 @@
  ┃ ┃ ┗ 📜page.js
  ┃ ┣ 📂scene-7
  ┃ ┃ ┗ 📜page.js
- ┃ ┗ 📂scene-8
+ ┃ ┣ 📂scene-8
  ┃ ┃ ┗ 📜page.js
+ ┃ ┗ 📂scene-9
+ ┃ ┃ ┗ 📜page.jsx
  ┣ 📜globals.css
  ┣ 📜layout.js
  ┗ 📜page.js

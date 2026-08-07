@@ -128,4 +128,76 @@
  *   FRONT ←──────────────────────────────────────────────→ REAR
  *
  */
+"use client";
 
+import React, { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import { SUV_CONFIG } from "./suv_config";
+import WheelAsset from "./WheelAsset";
+
+export default function SUVAsset({
+  rotationSpeed = 0.5,
+  steeringAngle = 0,
+}) {
+  const globalGroupRef = useRef();
+
+  useFrame((state) => {
+    const elapsed = state.clock.getElapsedTime();
+
+    if (globalGroupRef.current) {
+      // Scale frequency and amplitude uniformly with rolling speed
+      const idleFreq = 3.0;
+      const motionFreq = 12.0 * rotationSpeed;
+      const activeFreq = rotationSpeed > 0 ? motionFreq : idleFreq;
+
+      const idleAmp = 0.003;
+      const motionAmp = 0.012 * rotationSpeed;
+      const activeAmp = rotationSpeed > 0 ? motionAmp : idleAmp;
+
+      // Apply vertical bounce to the entire vehicle assembly uniformly
+      globalGroupRef.current.position.y = Math.sin(elapsed * activeFreq) * activeAmp;
+    }
+  });
+
+  return (
+    <group ref={globalGroupRef}>
+      {/* Front Left Wheel */}
+      <group position={[-SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.frontAxleZ]}>
+        <WheelAsset 
+          isLeft={true} 
+          isFront={true} 
+          rotationSpeed={rotationSpeed} 
+          steeringAngle={steeringAngle}
+        />
+      </group>
+
+      {/* Front Right Wheel */}
+      <group position={[SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.frontAxleZ]}>
+        <WheelAsset 
+          isLeft={false} 
+          isFront={true} 
+          rotationSpeed={rotationSpeed} 
+          steeringAngle={steeringAngle}
+        />
+      </group>
+
+      {/* Rear Left Wheel */}
+      <group position={[-SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.rearAxleZ]}>
+        <WheelAsset 
+          isLeft={true} 
+          isFront={false} 
+          rotationSpeed={rotationSpeed} 
+        />
+      </group>
+
+      {/* Rear Right Wheel */}
+      <group position={[SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.rearAxleZ]}>
+        <WheelAsset 
+          isLeft={false} 
+          isFront={false} 
+          rotationSpeed={rotationSpeed} 
+        />
+      </group>
+    </group>
+  );
+}
