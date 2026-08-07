@@ -134,6 +134,8 @@ import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { SUV_CONFIG } from "./suv_config";
 import WheelAsset from "./WheelAsset";
+import ChassisFrame from "./ChassisFrame";
+import Exhaust from "./Exhaust";
 
 export default function SUVAsset({
   rotationSpeed = 0.5,
@@ -145,7 +147,7 @@ export default function SUVAsset({
     const elapsed = state.clock.getElapsedTime();
 
     if (globalGroupRef.current) {
-      // Scale frequency and amplitude uniformly with rolling speed
+      // Scale frequency and amplitude uniformly with rolling speed to drive chassis bounce
       const idleFreq = 3.0;
       const motionFreq = 12.0 * rotationSpeed;
       const activeFreq = rotationSpeed > 0 ? motionFreq : idleFreq;
@@ -154,50 +156,67 @@ export default function SUVAsset({
       const motionAmp = 0.012 * rotationSpeed;
       const activeAmp = rotationSpeed > 0 ? motionAmp : idleAmp;
 
-      // Apply vertical bounce to the entire vehicle assembly uniformly
+      // Apply uniform vertical bounce oscillation
       globalGroupRef.current.position.y = Math.sin(elapsed * activeFreq) * activeAmp;
     }
   });
 
   return (
     <group ref={globalGroupRef}>
-      {/* Front Left Wheel */}
-      <group position={[-SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.frontAxleZ]}>
-        <WheelAsset 
-          isLeft={true} 
-          isFront={true} 
-          rotationSpeed={rotationSpeed} 
-          steeringAngle={steeringAngle}
-        />
+      
+      {/* ============================================================
+          1. WHEELS ASSEMBLY (Phase 1 Modules)
+         ============================================================ */}
+      <group>
+        {/* Front Left Wheel */}
+        <group position={[-SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.frontAxleZ]}>
+          <WheelAsset 
+            isLeft={true} 
+            isFront={true} 
+            rotationSpeed={rotationSpeed} 
+            steeringAngle={steeringAngle}
+          />
+        </group>
+
+        {/* Front Right Wheel */}
+        <group position={[SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.frontAxleZ]}>
+          <WheelAsset 
+            isLeft={false} 
+            isFront={true} 
+            rotationSpeed={rotationSpeed} 
+            steeringAngle={steeringAngle}
+          />
+        </group>
+
+        {/* Rear Left Wheel */}
+        <group position={[-SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.rearAxleZ]}>
+          <WheelAsset 
+            isLeft={true} 
+            isFront={false} 
+            rotationSpeed={rotationSpeed} 
+          />
+        </group>
+
+        {/* Rear Right Wheel */}
+        <group position={[SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.rearAxleZ]}>
+          <WheelAsset 
+            isLeft={false} 
+            isFront={false} 
+            rotationSpeed={rotationSpeed} 
+          />
+        </group>
       </group>
 
-      {/* Front Right Wheel */}
-      <group position={[SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.frontAxleZ]}>
-        <WheelAsset 
-          isLeft={false} 
-          isFront={true} 
-          rotationSpeed={rotationSpeed} 
-          steeringAngle={steeringAngle}
-        />
-      </group>
+      {/* ============================================================
+          2. CHASSIS FRAME & SUSPENSION (Phase 2 Modules)
+         ============================================================ */}
+      <ChassisFrame steeringAngle={steeringAngle} />
 
-      {/* Rear Left Wheel */}
-      <group position={[-SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.rearAxleZ]}>
-        <WheelAsset 
-          isLeft={true} 
-          isFront={false} 
-          rotationSpeed={rotationSpeed} 
-        />
-      </group>
+      {/* ============================================================
+          3. EXHAUST SYSTEM (Phase 2 Modules)
+         ============================================================ */}
+      <Exhaust />
 
-      {/* Rear Right Wheel */}
-      <group position={[SUV_CONFIG.wheelX, SUV_CONFIG.axleY, SUV_CONFIG.rearAxleZ]}>
-        <WheelAsset 
-          isLeft={false} 
-          isFront={false} 
-          rotationSpeed={rotationSpeed} 
-        />
-      </group>
     </group>
   );
 }

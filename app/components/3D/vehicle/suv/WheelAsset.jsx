@@ -40,6 +40,8 @@ export default function WheelAsset({
 
   const outerSign = isLeft ? 1 : -1;
   const rimRadius = SUV_CONFIG.rimDiameter / 2;
+  const tireMajorRadius = (SUV_CONFIG.wheelRadius + rimRadius) / 2; // 0.31m
+  const tireMinorRadius = (SUV_CONFIG.wheelRadius - rimRadius) / 2; // 0.07m
 
   // 18 off-road tread lugs
   const treadCount = 18;
@@ -58,7 +60,7 @@ export default function WheelAsset({
   const lugAngles = Array.from({ length: lugCount }, (_, i) => (i * 2 * Math.PI) / lugCount);
 
   useFrame((state, delta) => {
-    // Roll around local X-axis to roll forward/backward cleanly
+    // Roll strictly around local X-axis
     if (spinningGroupRef.current && rotationSpeed > 0) {
       spinningGroupRef.current.rotation.x += delta * 10 * rotationSpeed;
     }
@@ -87,7 +89,7 @@ export default function WheelAsset({
       </group>
 
       {/* 
-        2. SPINNING ASSEMBLY (Rolls strictly around local X axle)
+        2. SPINNING ASSEMBLY 
       */}
       <group ref={spinningGroupRef}>
         
@@ -95,39 +97,25 @@ export default function WheelAsset({
         <group rotation={[0, 0, Math.PI / 2]}>
           
           {/* 
-            Main Rubber Tire Tread Band (Hollow Tube)
+            Main Volumetric Rubber Tire (Torus Geometry)
+            Renders a highly realistic, thick, rounded off-road tire with true volume and a hollow center.
+            Scaled on its local Z axis to flatten the tread profile to match wheelWidth (0.26m).
           */}
-          <mesh castShadow receiveShadow>
-            <cylinderGeometry args={[
-              SUV_CONFIG.wheelRadius, 
-              SUV_CONFIG.wheelRadius, 
-              SUV_CONFIG.wheelWidth, 
-              32, 
-              1, 
-              true 
-            ]} />
-            <meshStandardMaterial color="#2d2d30" roughness={0.85} metalness={0.05} side={DoubleSide} />
-          </mesh>
-
-          {/* Tire Sidewall Rings (Left & Right) */}
-          <mesh castShadow position={[0, SUV_CONFIG.wheelWidth / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[rimRadius, SUV_CONFIG.wheelRadius, 32]} />
-            <meshStandardMaterial color="#2d2d30" roughness={0.85} side={DoubleSide} />
-          </mesh>
-
-          <mesh castShadow position={[0, -SUV_CONFIG.wheelWidth / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[rimRadius, SUV_CONFIG.wheelRadius, 32]} />
-            <meshStandardMaterial color="#2d2d30" roughness={0.85} side={DoubleSide} />
+          <mesh castShadow receiveShadow scale={[1, 1, 1.7]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[tireMajorRadius, tireMinorRadius, 16, 48]} />
+            <meshStandardMaterial color="#212124" roughness={0.8} metalness={0.05} />
           </mesh>
 
           {/* Procedural Mud-Terrain Tread Lugs */}
           <group>
             {treadAngles.map((angle, index) => (
               <group key={`tread-${index}`} rotation={[0, angle, 0]}>
+                {/* Outer Tread Row */}
                 <mesh castShadow position={[SUV_CONFIG.wheelRadius - 0.005, 0.06, 0]}>
                   <boxGeometry args={[0.015, 0.05, 0.06]} />
                   <meshStandardMaterial color="#0f0f12" roughness={0.95} />
                 </mesh>
+                {/* Inner Tread Row */}
                 <mesh castShadow position={[SUV_CONFIG.wheelRadius - 0.005, -0.06, 0]} rotation={[0.12, 0, 0]}>
                   <boxGeometry args={[0.015, 0.05, 0.06]} />
                   <meshStandardMaterial color="#0f0f12" roughness={0.95} />
@@ -159,10 +147,7 @@ export default function WheelAsset({
               <meshStandardMaterial color="#f8fafc" roughness={0.05} metalness={1.0} />
             </mesh>
 
-            {/* 
-              Beadlock Hex Bolt Heads (Arranged radially on the Lip)
-              Sitting slightly forward along Y-axle on the rim face lip
-            */}
+            {/* Beadlock Hex Bolt Heads (Arranged radially on the Lip) */}
             <group>
               {boltAngles.map((angle, index) => (
                 <mesh 
@@ -174,7 +159,7 @@ export default function WheelAsset({
                     Math.cos(angle) * (rimRadius - 0.015)
                   ]}
                 >
-                  <cylinderGeometry args={[0.006, 0.006, 0.01, 6]} /> {/* 6-sided hex head */}
+                  <cylinderGeometry args={[0.006, 0.006, 0.01, 6]} />
                   <meshStandardMaterial color="#ffffff" roughness={0.1} metalness={0.95} />
                 </mesh>
               ))}
@@ -186,9 +171,7 @@ export default function WheelAsset({
               <meshStandardMaterial color="#334155" roughness={0.2} metalness={0.85} />
             </mesh>
 
-            {/* 
-              Exposed Chrome Lug Nuts (Arranged radially around center cap)
-            */}
+            {/* Exposed Chrome Lug Nuts */}
             <group>
               {lugAngles.map((angle, index) => (
                 <mesh 
@@ -206,11 +189,7 @@ export default function WheelAsset({
               ))}
             </group>
 
-            {/* 
-              Heavy Duty Blocky spokes
-              Rotated around local Y-axle.
-              Beefy structural box geometry sloped aggressively inward.
-            */}
+            {/* Heavy Duty Blocky Spokes */}
             {spokeAngles.map((angle, index) => (
               <group key={`spoke-${index}`} rotation={[0, angle, 0]}>
                 <mesh 
@@ -218,7 +197,7 @@ export default function WheelAsset({
                   position={[rimRadius / 2 + 0.01, 0, 0]}
                   rotation={[0, 0, 0.22 * outerSign]} // Aggressive deep-dish slope
                 >
-                  <boxGeometry args={[rimRadius - 0.02, 0.026, 0.062]} /> {/* Chunky dimensions */}
+                  <boxGeometry args={[rimRadius - 0.02, 0.026, 0.062]} />
                   <meshStandardMaterial color="#cbd5e1" roughness={0.15} metalness={0.9} />
                 </mesh>
               </group>
