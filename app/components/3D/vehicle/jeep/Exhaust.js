@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useLayoutEffect } from "react";
+import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -16,6 +16,8 @@ function createSeededRandom(seed = 12345) {
 
 // Generates a soft, multi-lobed organic vapor texture dynamically
 function createMultiLobedSmokeTexture() {
+  if (typeof window === "undefined") return null;
+
   const canvas = document.createElement("canvas");
   canvas.width = 256;
   canvas.height = 256;
@@ -48,7 +50,19 @@ function createMultiLobedSmokeTexture() {
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
   return texture;
+}
+
+// Module-level cache to keep the rendering context purely idempotent
+let cachedSmokeTexture = null;
+
+function getSmokeTexture() {
+  if (typeof window === "undefined") return null;
+  if (!cachedSmokeTexture) {
+    cachedSmokeTexture = createMultiLobedSmokeTexture();
+  }
+  return cachedSmokeTexture;
 }
 
 export default function Exhaust({ cfg, materials, engineOn }) {
@@ -58,7 +72,8 @@ export default function Exhaust({ cfg, materials, engineOn }) {
   const totalPuffs = 12;
   const lifetime = 1.8; // Duration of individual puff cycle in seconds
 
-  const smokeTexture = useMemo(() => createMultiLobedSmokeTexture(), []);
+  // Safely grab the cached texture inside useMemo (null-safe on SSR server)
+  const smokeTexture = useMemo(() => getSmokeTexture(), []);
 
   // Soft, semi-opaque dark-grey styling for typical exhaust soot/water vapor
   const materialConfig = useMemo(() => {
@@ -68,7 +83,7 @@ export default function Exhaust({ cfg, materials, engineOn }) {
       depthWrite: false,
       depthTest: true,
       alphaTest: 0.001,
-      map: smokeTexture,
+      map: smokeTexture || undefined,
       blending: THREE.NormalBlending,
       side: THREE.DoubleSide,
       toneMapped: true,
@@ -166,14 +181,6 @@ export default function Exhaust({ cfg, materials, engineOn }) {
       shaderRef.current.uniforms.uTime.value = elapsed;
     }
   });
-
-  useLayoutEffect(() => {
-    if (meshRef.current && meshRef.current.geometry) {
-      const instancedBufferAttribute = new THREE.InstancedBufferAttribute(opacities, 1);
-      meshRef.current.geometry.setAttribute("aOpacity", instancedBufferAttribute);
-      meshRef.current.geometry.attributes.aOpacity.needsUpdate = true;
-    }
-  }, [opacities]);
 
   // Modifies a basic mesh material to inject custom vertex boiling-turbulence
   const customMaterial = useMemo(() => {
@@ -342,7 +349,12 @@ export default function Exhaust({ cfg, materials, engineOn }) {
         args={[null, null, totalPuffs]}
         material={customMaterial}
       >
-        <planeGeometry args={[1, 1]} />
+        <planeGeometry args={[1, 1]}>
+          <instancedBufferAttribute
+            attach="attributes-aOpacity"
+            args={[opacities, 1]}
+          />
+        </planeGeometry>
       </instancedMesh>
     </group>
   );

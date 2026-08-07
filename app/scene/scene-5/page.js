@@ -246,7 +246,6 @@ function DrivingController({
 export default function SceneFourPage() {
   const { resolvedTheme, setTheme } = useTheme();
   
-  // Safely check client render status without cascading effects
   const isMounted = useIsMounted();
   const isDark = isMounted ? resolvedTheme === "dark" : true;
 
@@ -446,23 +445,22 @@ export default function SceneFourPage() {
       )}
 
       {/* Mobile controller HUD layout */}
-{!lazySusanOn && (
-  <MobileController 
-    engineOn={engineOn}
-    setEngineOn={setEngineOn}
-    mobileControlsRef={mobileControlsRef}
-    uiSteeringWheelRef={uiSteeringWheelRef}
-    activeGear={activeGear}
-    setActiveGear={setActiveGear}
-    lazySusanOn={lazySusanOn}
-    onToggleShowroom={handleToggleShowroom}
-    // Connected mobile theme and paint color changer states
-    isDark={isDark}
-    onToggleTheme={() => setTheme(isDark ? "light" : "dark")}
-    color={color}
-    setColor={setColor}
-  />
-)}
+      {!lazySusanOn && (
+        <MobileController 
+          engineOn={engineOn}
+          setEngineOn={setEngineOn}
+          mobileControlsRef={mobileControlsRef}
+          uiSteeringWheelRef={uiSteeringWheelRef}
+          activeGear={activeGear}
+          setActiveGear={setActiveGear}
+          lazySusanOn={lazySusanOn}
+          onToggleShowroom={handleToggleShowroom}
+          isDark={isDark}
+          onToggleTheme={() => setTheme(isDark ? "light" : "dark")}
+          color={color}
+          setColor={setColor}
+        />
+      )}
     </main>
   );
 }
