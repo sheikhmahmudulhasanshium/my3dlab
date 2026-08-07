@@ -103,11 +103,11 @@
  *                     [ LATCH / STRIKER ]
  *
  */
-
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
+import { DoubleSide } from "three";
 import * as THREE from "three";
 import { SUV_CONFIG } from "./suv_config";
 
@@ -116,11 +116,17 @@ export default function EngineBonnet() {
   const [isOpen, setIsOpen] = useState(false);
 
   const bonnetWidth = SUV_CONFIG.bodyHalfWidth * 2; // 1.56m
-  const bonnetLength = SUV_CONFIG.bonnetStartZ - SUV_CONFIG.bonnetEndZ; // 0.90m
+  
+  // Shifted Forward: Hood starts at Z=1.15m (cowl tray line) and ends at Z=1.85m (near front bumper)
+  const bonnetRearZ = 1.15;
+  const bonnetFrontZ = 1.85;
+  const bonnetLength = bonnetFrontZ - bonnetRearZ; // 0.70m length
   const bonnetThickness = 0.012;
 
-  // Base sloped angle when closed
-  const closedAngle = 0.155; 
+  // Center coordinate math for sloped alignment
+  const centerZ = (bonnetFrontZ + bonnetRearZ) / 2; // 1.50m
+  const centerY = (SUV_CONFIG.bonnetY + SUV_CONFIG.bonnetLatchY) / 2; // 1.41m
+  const slopeAngle = 0.155; // 9 degrees down-slope
 
   // ============================================================
   // PROCEDURAL HIGH-FIDELITY MATERIALS
@@ -164,13 +170,13 @@ export default function EngineBonnet() {
   }, []);
 
   // ============================================================
-  // BONNET COWL-HINGE ANIMATION
+  // BONNET COWL-HINGE ANIMATION (Pivots at Z = 1.15m)
   // ============================================================
   useFrame((state, delta) => {
     if (!bonnetRef.current) return;
 
-    // Angle target: opens upward around X-axis
-    const targetAngle = isOpen ? -Math.PI / 4 : closedAngle;
+    // Angle target: opens upward around X-axis from the cowl hinge line
+    const targetAngle = isOpen ? -Math.PI / 4 : slopeAngle;
 
     bonnetRef.current.rotation.x = THREE.MathUtils.damp(
       bonnetRef.current.rotation.x,
@@ -204,25 +210,31 @@ export default function EngineBonnet() {
   return (
     <group>
       {/* ========================================================
-          A. INNER STRUCTURAL FENDER WALLS & ENGINE FLOOR
+          A. INNER FENDER DROP WALLS, ENGINE FLOOR & FIREWALL
          ======================================================== */}
       <group>
-        {/* Left Fender Inner Drop Wall */}
-        <mesh position={[-SUV_CONFIG.bodyHalfWidth + 0.05, 0.75, 1.08]} castShadow>
-          <boxGeometry args={[0.02, 0.35, 0.72]} />
+        {/* Left Fender Inner Drop Wall (Shifted to Z = 1.50m) */}
+        <mesh position={[-SUV_CONFIG.bodyHalfWidth + 0.05, 0.75, centerZ]} castShadow>
+          <boxGeometry args={[0.02, 0.35, bonnetLength]} />
           {engineMaterials.engineBlockDark}
         </mesh>
 
-        {/* Right Fender Inner Drop Wall */}
-        <mesh position={[SUV_CONFIG.bodyHalfWidth - 0.05, 0.75, 1.08]} castShadow>
-          <boxGeometry args={[0.02, 0.35, 0.72]} />
+        {/* Right Fender Inner Drop Wall (Shifted to Z = 1.50m) */}
+        <mesh position={[SUV_CONFIG.bodyHalfWidth - 0.05, 0.75, centerZ]} castShadow>
+          <boxGeometry args={[0.02, 0.35, bonnetLength]} />
           {engineMaterials.engineBlockDark}
         </mesh>
 
-        {/* Engine Compartment Floor Plate (Prevents see-through) */}
-        <mesh position={[0, 0.54, 1.085]} castShadow receiveShadow>
-          <boxGeometry args={[bonnetWidth - 0.12, 0.03, 0.74]} />
+        {/* Engine Compartment Floor Plate (Shifted to Z = 1.50m) */}
+        <mesh position={[0, 0.54, centerZ]} castShadow receiveShadow>
+          <boxGeometry args={[bonnetWidth - 0.12, 0.03, bonnetLength]} />
           {engineMaterials.rubber}
+        </mesh>
+
+        {/* Vertical Firewall/Bulkhead Plate (Mounted at Z = 1.15m to seal cabin) */}
+        <mesh position={[0, 0.78, bonnetRearZ]} castShadow>
+          <boxGeometry args={[bonnetWidth - 0.10, 0.45, 0.02]} />
+          {engineMaterials.engineBlockDark}
         </mesh>
       </group>
 
@@ -231,8 +243,8 @@ export default function EngineBonnet() {
          ======================================================== */}
       <group>
         
-        {/* Main Engine block assembly (Z-aligned within bay bounds) */}
-        <group position={[0, 0.72, 1.10]}>
+        {/* Main Engine block assembly (Centered at Z=1.50m) */}
+        <group position={[0, 0.72, 1.50]}>
           {/* Cast Iron Block */}
           <mesh castShadow receiveShadow>
             <boxGeometry args={[0.38, 0.28, 0.44]} />
@@ -270,8 +282,8 @@ export default function EngineBonnet() {
           </mesh>
         </group>
 
-        {/* Air Filter Box & Intake Manifold Tube */}
-        <group position={[SUV_CONFIG.airBoxX, 0.78, SUV_CONFIG.airBoxZ]}>
+        {/* Air Filter Box & Intake Manifold Tube (Shifted to Z = 1.35m) */}
+        <group position={[SUV_CONFIG.airBoxX, 0.78, 1.35]}>
           <mesh castShadow>
             <boxGeometry args={[0.18, 0.14, 0.20]} />
             {engineMaterials.plastic}
@@ -288,8 +300,8 @@ export default function EngineBonnet() {
           </mesh>
         </group>
 
-        {/* 12V Lead-Acid Battery */}
-        <group position={[-SUV_CONFIG.batteryX, 0.74, SUV_CONFIG.batteryZ]}>
+        {/* 12V Battery (Shifted to Z = 1.35m) */}
+        <group position={[-SUV_CONFIG.batteryX, 0.74, 1.35]}>
           <mesh castShadow>
             <boxGeometry args={[0.16, 0.14, 0.18]} />
             {engineMaterials.plastic}
@@ -310,19 +322,19 @@ export default function EngineBonnet() {
           </mesh>
         </group>
 
-        {/* Fuse Box & ECU */}
-        <mesh castShadow position={[-SUV_CONFIG.fuseBoxX, 0.76, SUV_CONFIG.fuseBoxZ]}>
+        {/* Fuse Box & ECU (Shifted forward relative to firewall Z = 1.15m) */}
+        <mesh castShadow position={[-SUV_CONFIG.fuseBoxX, 0.76, 1.25]}>
           <boxGeometry args={[0.13, 0.12, 0.15]} />
           {engineMaterials.plastic}
         </mesh>
 
-        <mesh castShadow position={[SUV_CONFIG.ecuX, 0.76, SUV_CONFIG.ecuZ]} rotation={[0, -0.15, 0.05]}>
+        <mesh castShadow position={[SUV_CONFIG.ecuX, 0.76, 1.22]} rotation={[0, -0.15, 0.05]}>
           <boxGeometry args={[0.04, 0.13, 0.14]} />
           {engineMaterials.aluminum}
         </mesh>
 
-        {/* CMS Radiator & Dual Fan Module */}
-        <group position={[0, SUV_CONFIG.cmsY, SUV_CONFIG.cmsZ]}>
+        {/* CMS Radiator & Dual Fan Module (Shifted forward to Z=1.78m) */}
+        <group position={[0, SUV_CONFIG.cmsY, 1.78]}>
           {/* Radiator Core */}
           <mesh castShadow>
             <boxGeometry args={[0.82, 0.32, 0.04]} />
@@ -354,8 +366,8 @@ export default function EngineBonnet() {
           ))}
         </group>
 
-        {/* Coolant Expansion Reservoir */}
-        <group position={[SUV_CONFIG.coolantReservoirX, 0.72, SUV_CONFIG.coolantReservoirZ]}>
+        {/* Coolant Expansion Reservoir (Shifted forward to Z=1.62m) */}
+        <group position={[SUV_CONFIG.coolantReservoirX, 0.72, 1.62]}>
           <mesh castShadow>
             <cylinderGeometry args={[0.04, 0.04, 0.11, 12]} />
             {engineMaterials.blue}
@@ -366,8 +378,8 @@ export default function EngineBonnet() {
           </mesh>
         </group>
 
-        {/* Brake Vacuum Booster & Reservoir */}
-        <group position={[-SUV_CONFIG.brakeBoosterX, 0.82, SUV_CONFIG.brakeBoosterZ]} rotation={[0, Math.PI / 2, 0]}>
+        {/* Brake Vacuum Booster & Reservoir (Shifted forward to Z=1.20m) */}
+        <group position={[-SUV_CONFIG.brakeBoosterX, 0.82, 1.20]} rotation={[0, Math.PI / 2, 0]}>
           <mesh castShadow rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.08, 0.09, 0.05, 20]} />
             {engineMaterials.plastic}
@@ -384,19 +396,18 @@ export default function EngineBonnet() {
       </group>
 
       {/* ========================================================
-          C. ANIMATED CENTRAL BONNET (Lifts/Pivots from wind cowl)
-          Pivots cleanly at SUV_CONFIG.bonnetEndZ (0.72m)
+          C. ANIMATED CENTRAL BONNET (Pivots at Z = 1.15m)
           ======================================================== */}
       <group
         ref={bonnetRef}
-        position={[0, SUV_CONFIG.bonnetY, SUV_CONFIG.bonnetEndZ]} // Pivot mounted at rear hinge line
+        position={[0, SUV_CONFIG.bonnetY, bonnetRearZ]} // Pivot mounted at Z = 1.15m (cowl tray line)
         onClick={toggleBonnet}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
       >
         {/* 
           Outer Sheet-Metal Panel 
-          Offset forward by half of the bonnet's length (0.45m)
+          Offset forward from the hinge pivot by half of its length (0.35m)
         */}
         <group position={[0, -0.06, bonnetLength / 2]}>
           {/* Main outer hood skin */}

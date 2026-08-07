@@ -127,7 +127,8 @@
  *
  *   FRONT ←──────────────────────────────────────────────→ REAR
  *
- */"use client";
+ */
+"use client";
 
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -135,7 +136,8 @@ import { SUV_CONFIG } from "./suv_config";
 import WheelAsset from "./WheelAsset";
 import ChassisFrame from "./ChassisFrame";
 import Exhaust from "./Exhaust";
-import EngineBonnet from "./EngineBonnet"; // Import Phase 3 Powertrain Module
+import EngineBonnet from "./EngineBonnet";
+import CabinInterior from "./CabinInterior"; // Import Phase 4 Cabin Module
 
 export default function SUVAsset({
   rotationSpeed = 0.5,
@@ -221,6 +223,11 @@ export default function SUVAsset({
           4. ENGINE BAY & POWERTRAIN (Phase 3 Modules)
          ============================================================ */}
       <EngineBonnet />
+
+      {/* ============================================================
+          5. CABIN INTERIOR LAYOUT (Phase 4 Modules)
+         ============================================================ */}
+      <CabinInterior />
 
     </group>
   );
