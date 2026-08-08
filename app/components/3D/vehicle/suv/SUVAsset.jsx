@@ -137,7 +137,8 @@ import WheelAsset from "./WheelAsset";
 import ChassisFrame from "./ChassisFrame";
 import Exhaust from "./Exhaust";
 import EngineBonnet from "./EngineBonnet";
-import CabinInterior from "./CabinInterior"; // Import Phase 4 Cabin Module
+import CabinInterior from "./CabinInterior";
+import BodyPanels from "./BodyPanels"; // Import Phase 5 Body Panels Module
 
 export default function SUVAsset({
   rotationSpeed = 0.5,
@@ -228,6 +229,11 @@ export default function SUVAsset({
           5. CABIN INTERIOR LAYOUT (Phase 4 Modules)
          ============================================================ */}
       <CabinInterior />
+
+      {/* ============================================================
+          6. LOWER BODY PANELS (Phase 5 Modules)
+         ============================================================ */}
+      <BodyPanels />
 
     </group>
   );

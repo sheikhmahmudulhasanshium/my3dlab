@@ -11,15 +11,15 @@ export const SUV_CONFIG = {
   wheelbase: 2.20,           // Front axle -> rear axle
 
   // ============================================================
-  // TRACK / WHEEL ARCHES (Chunky Rugged Proportions)
+  // TRACK / WHEEL ARCHES (Wide-Track Stance to prevent sill clipping)
   // ============================================================
-  wheelX: 0.90,              // Wheel center lateral offset
+  wheelX: 0.94,              // Shoved outward to 0.94m (Inner tire edge at 0.81m)
   fenderX: 0.81,             // Outer fender / arch width
   innerWheelWellX: 0.68,     // Inner wheelhouse width
   wheelArchRadius: 0.42,     // Wheel arch radius
-  wheelRadius: 0.38,         // Chunky tire outer radius (Increased from 0.36)
-  wheelWidth: 0.26,          // Broad tire width (Increased from 0.24)
-  rimDiameter: 0.44,         // Smaller rim diameter for high sidewall (Decreased from 0.58)
+  wheelRadius: 0.38,         // Chunky tire outer radius (0.38m)
+  wheelWidth: 0.26,          // Broad tire width (0.26m)
+  rimDiameter: 0.44,         // Rim diameter
 
   // ============================================================
   // CHASSIS / UNDERBODY
@@ -29,7 +29,7 @@ export const SUV_CONFIG = {
   subframeX: 0.60,           // Subframe width
   crossmemberX: 0.62,        // Crossmember width
 
-  chassisFloorY: 0.38,       // Chassis / underbody reference
+  chassisFloorY: 0.38,       // Chassis / underbody reference (0.38m)
   groundY: 0.00,             // Ground reference
   groundClearance: 0.32,     // SUV ground clearance
 
@@ -38,7 +38,7 @@ export const SUV_CONFIG = {
   // ============================================================
   frontAxleZ: 1.25,          // Front wheel centerline
   rearAxleZ: -0.95,          // Rear wheel centerline
-  axleY: 0.44,               // Wheel center height
+  axleY: 0.44,               // Wheel center height (0.44m)
 
   frontSpringY: 0.58,        // Front spring / strut position
   rearSpringY: 0.55,         // Rear spring position
@@ -46,7 +46,7 @@ export const SUV_CONFIG = {
   rearDamperY: 0.61,         // Rear damper position
 
   // ============================================================
-  // CABIN / GREENHOUSE
+  // CABIN / GREENHOUSE (firewall at 1.15m)
   // ============================================================
   windshieldZ: 0.95,         // Windshield lower/cowl point
   windshieldTopZ: 1.72,      // Windshield upper point
@@ -70,56 +70,25 @@ export const SUV_CONFIG = {
   rearSeatZ: -0.55,          // Rear bench position
 
   // ============================================================
-  // BONNET / ENGINE BAY
+  // BONNET / ENGINE BAY (re-centered forward 1.15m to 1.85m)
   // ============================================================
-  bonnetStartZ: 1.62,        // Front bonnet start
-  bonnetEndZ: 0.72,          // Rear bonnet / cowl
+  bonnetHingeZ: 1.15,        // Front cowl hinge line
   bonnetY: 1.48,             // Bonnet surface height
-  engineCenterZ: 0.55,       // Engine center
-  engineCenterY: 0.86,       // Engine height
-  engineBayFrontZ: 1.45,
-  engineBayRearZ: 0.72,
-  batteryZ: 0.88,            // 12V battery position
-  batteryX: 0.56,
-  fuseBoxZ: 0.72,
-  fuseBoxX: 0.60,
-  ecuZ: 0.66,
-  ecuX: 0.58,
-
-  // ============================================================
-  // BRAKE / CLUTCH SYSTEM
-  // ============================================================
-  brakeBoosterZ: 0.48,
-  brakeBoosterX: 0.58,
-  bmsZ: 0.42,                // Brake Master Cylinder
-  bmsX: 0.58,
-  brakeFluidReservoirZ: 0.50,
-  clutchMasterZ: 0.42,       // Manual transmission only
-  clutchMasterX: 0.50,
-  clutchReservoirZ: 0.51,
-
-  // ============================================================
-  // COOLING MODULE — CMS
-  // ============================================================
-  cmsZ: 1.48,                // Cooling Module System
-  cmsY: 0.78,
-  radiatorZ: 1.46,
-  radiatorY: 0.80,
-  condenserZ: 1.50,
-  condenserY: 0.78,
-  coolingFanZ: 1.40,
-  coolingFanY: 0.82,
-  coolantReservoirZ: 1.10,
+  bonnetStartZ: 1.85,        // Front bonnet nose
+  windshieldZ: 0.95,         // Windshield cowl
+  bonnetLatchY: 1.34,        // Front nose height
   coolantReservoirX: 0.58,
-
-  // ============================================================
-  // AIR INTAKE
-  // ============================================================
-  airBoxZ: 0.95,
+  coolantReservoirZ: 1.62,
   airBoxX: 0.56,
-  intakeZ: 0.78,
-  intakeY: 0.94,
-  throttleBodyZ: 0.68,
+  airBoxZ: 1.35,
+  batteryX: 0.56,
+  batteryZ: 1.35,
+  fuseBoxX: 0.60,
+  fuseBoxZ: 1.25,
+  ecuX: 0.58,
+  ecuZ: 1.22,
+  brakeBoosterX: 0.58,
+  brakeBoosterZ: 1.20,
 
   // ============================================================
   // TRANSMISSION / STEERING
@@ -142,35 +111,6 @@ export const SUV_CONFIG = {
   splitterZ: -1.45,
   exhaustTipZ: -1.60,
   exhaustTipX: 0.55,
-
-  // ============================================================
-  // BONNET HARDWARE
-  // ============================================================
-  bonnetHingeZ: 0.78,
-  bonnetHingeX: 0.68,
-  bonnetLatchZ: 1.43,
-  bonnetLatchY: 1.34,
-  bonnetStrikerZ: 1.43,
-
-  // ============================================================
-  // ROOF / SUNROOF
-  // ============================================================
-  sunroofStartZ: 0.52,
-  sunroofEndZ: -0.42,
-  sunroofY: 1.70,
-  sunroofWidth: 0.62,
-
-  // ============================================================
-  // DOORS
-  // ============================================================
-  frontDoorStartZ: 0.86,
-  frontDoorEndZ: 0.08,
-  rearDoorStartZ: 0.05,
-  rearDoorEndZ: -0.82,
-  doorBottomY: 0.48,
-  doorTopY: 1.18,
-  frontDoorHandleZ: 0.48,
-  rearDoorHandleZ: -0.46,
 
   // ============================================================
   // FRONT FASCIA / BUMPER
@@ -201,55 +141,10 @@ export const SUV_CONFIG = {
   exhaustCutoutX: 0.55,
 
   // ============================================================
-  // LIGHTING
-  // ============================================================
-  headlampZ: 1.72,
-  headlampX: 0.68,
-  projectorZ: 1.73,
-  projectorX: 0.69,
-  drlHaloZ: 1.76,
-  rearLedZ: -1.55,
-  rearLedY: 1.32,
-  brakeLightZ: -1.54,
-  reverseLightZ: -1.55,
-  turnSignalZ: -1.56,
-
-  // ============================================================
-  // EXTERIOR TRIM
-  // ============================================================
-  frontArchTrimZ: 1.18,
-  rearArchTrimZ: -0.88,
-  archTrimWidth: 0.08,
-  rockerTrimY: 0.43,
-
-  // ============================================================
-  // LICENSE PLATES
-  // ============================================================
-  frontPlateZ: 1.92,
-  frontPlateY: 0.70,
-  rearPlateZ: -1.66,
-  rearPlateY: 0.76,
-
-  // ============================================================
-  // MIRRORS
-  // ============================================================
-  mirrorZ: 0.58,
-  mirrorY: 1.28,
-  mirrorX: 0.84,
-
-  // ============================================================
   // WHEELS / TIRES
   // ============================================================
   wheelDiameter: 0.76,
   tireSidewall: 0.16,
   wheelSpokeCount: 5,
   wheelHubRadius: 0.08,
-
-  // ============================================================
-  // VEHICLE REFERENCE
-  // ============================================================
-  frontReferenceZ: 1.25,
-  rearReferenceZ: -0.95,
-  vehicleCenterZ: 0.15,
-  vehicleCenterY: 0.85,
 };
