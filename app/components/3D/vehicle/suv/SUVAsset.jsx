@@ -138,6 +138,7 @@ import ChassisFrame from "./ChassisFrame";
 import Exhaust from "./Exhaust";
 import EngineBonnet from "./EngineBonnet";
 import CabinInterior from "./CabinInterior";
+import CabinRoofShell from "./CabinRoofShell"; // Import newly created Sunroof & Roof module
 import BodyPanels from "./BodyPanels"; // Import Phase 5 Body Panels Module
 
 export default function SUVAsset({
@@ -229,9 +230,22 @@ export default function SUVAsset({
           5. CABIN INTERIOR LAYOUT (Phase 4 Modules)
          ============================================================ */}
       <CabinInterior />
+{/* ============================================================
+          6. CABIN ROOF SHELL & PANORAMIC SUNROOF
+         ============================================================ */}
+      <CabinRoofShell 
+        // 1. Coordinates: [X-shift (left/right), Y-shift (up/down), Z-shift (forward/backward)]
+        position={[0.0, -0.09, -0.37]} 
+        
+        // 2. Angles (in radians): [Pitch (nose up/down), Yaw (spin), Roll (tilt)]
+        rotation={[-0.050, 0.0, 0.0]} 
+        
+        // 3. Scale: [Width scale, Height scale, Length/Z-scale]
+        scale={[1, 0.9, 0.84]} 
+      />
 
       {/* ============================================================
-          6. LOWER BODY PANELS (Phase 5 Modules)
+          7. LOWER BODY PANELS (Phase 5 Modules)
          ============================================================ */}
       <BodyPanels />
 
