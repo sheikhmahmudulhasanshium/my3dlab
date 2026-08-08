@@ -140,7 +140,9 @@ import EngineBonnet from "./EngineBonnet";
 import CabinInterior from "./CabinInterior";
 import CabinRoofShell from "./CabinRoofShell"; // Import newly created Sunroof & Roof module
 import BodyPanels from "./BodyPanels"; // Import Phase 5 Body Panels Module
-
+import Doors from "./Doors"; // Import Phase 6 Doors & Windows Module
+import { Wind } from "lucide-react";
+import WindshieldWipers from "./Windshield";
 export default function SUVAsset({
   rotationSpeed = 0.5,
   steeringAngle = 0,
@@ -243,6 +245,18 @@ export default function SUVAsset({
         // 3. Scale: [Width scale, Height scale, Length/Z-scale]
         scale={[1, 0.9, 0.84]} 
       />
+{/* ============================================================
+          7. DOORS & WINDOWS (5 Doors, 7 Windows Layout)
+         ============================================================ */}
+<Doors 
+  // Parent group overrides
+  position={[0.0, 0, 0]} 
+  rotation={[0, 0.0, 0.0]} 
+  scale={[1, 1, 1]} 
+  doorColor="#ffff00"
+
+ />
+<WindshieldWipers/>
 
       {/* ============================================================
           7. LOWER BODY PANELS (Phase 5 Modules)
