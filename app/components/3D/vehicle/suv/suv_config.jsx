@@ -67,7 +67,7 @@ export const SUV_CONFIG = {
   rearFloorY: 0.50,          // Rear floor
   cargoFloorY: 0.52,         // Cargo floor
   frontSeatZ: 0.72,          // Front bucket seat position
-  rearSeatZ: -0.55,          // Rear bench position
+  rearSeatZ: -0.80,          // Rear bench position
 
   // ============================================================
   // BONNET / ENGINE BAY (re-centered forward 1.15m to 1.85m)
