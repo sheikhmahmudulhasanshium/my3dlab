@@ -249,13 +249,16 @@ export default function SUVAsset({
           7. DOORS & WINDOWS (5 Doors, 7 Windows Layout)
          ============================================================ */}
 <Doors 
-  // Parent group overrides
   position={[0.0, 0, 0]} 
   rotation={[0, 0.0, 0.0]} 
   scale={[1, 1, 1]} 
   doorColor="#ffff00"
 
- />
+  // ADD THESE PROPS TO ANIMATE THE DOORS (e.g., 0.5 radians = ~28 degrees):
+  frontOpenAngle={1}     // Swings front doors outward
+  backOpenAngle={1}      // Swings rear passenger doors outward
+  tailgateOpenAngle={-0.7}  // Swings tailgate upward
+/>
 <WindshieldWipers/>
 
       {/* ============================================================
