@@ -32,7 +32,7 @@ const Navbar = () => {
             fill
             priority
             sizes="144px"
-            className="object-contain object-left"
+            className="object-contain object-left sizes-auto"
           />
         </Link>
       </div>

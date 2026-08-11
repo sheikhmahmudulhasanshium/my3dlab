@@ -141,8 +141,9 @@ import CabinInterior from "./CabinInterior";
 import CabinRoofShell from "./CabinRoofShell"; // Import newly created Sunroof & Roof module
 import BodyPanels from "./BodyPanels"; // Import Phase 5 Body Panels Module
 import Doors from "./Doors"; // Import Phase 6 Doors & Windows Module
-import { Wind } from "lucide-react";
 import WindshieldWipers from "./Windshield";
+import FrontGrille from "./FrontGrille";
+import LicensePlate from "./LicensePlate"; // Import Phase 7 License Plate Module
 export default function SUVAsset({
   rotationSpeed = 0.5,
   steeringAngle = 0,
@@ -249,17 +250,10 @@ export default function SUVAsset({
           7. DOORS & WINDOWS (5 Doors, 7 Windows Layout)
          ============================================================ */}
 <Doors 
-  position={[0.0, 0, 0]} 
-  rotation={[0, 0.0, 0.0]} 
-  scale={[1, 1, 1]} 
-  doorColor="#ffff00"
-
-  // ADD THESE PROPS TO ANIMATE THE DOORS (e.g., 0.5 radians = ~28 degrees):
-  frontOpenAngle={1}     // Swings front doors outward
-  backOpenAngle={1}      // Swings rear passenger doors outward
-  tailgateOpenAngle={-0.7}  // Swings tailgate upward
 />
 <WindshieldWipers/>
+<FrontGrille/>
+<LicensePlate/>
 
       {/* ============================================================
           7. LOWER BODY PANELS (Phase 5 Modules)

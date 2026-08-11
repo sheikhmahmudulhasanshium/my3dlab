@@ -16,7 +16,7 @@ export const HomePage = () => {
               fill
               priority
               sizes="(max-width: 800px) 100vw, 800px"
-              className="object-contain"
+              className="object-contain sizes-auto"
             />
           </div>
 
@@ -119,6 +119,18 @@ export const HomePage = () => {
             </div>
             <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
           </Link>
+
+          {/* New Scene 9 Link */}
+          <Link 
+            href="/scene/scene-9" 
+            className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/40 hover:bg-accent/40 hover:border-sky-500/30 transition-all text-left group"
+          >
+            <div>
+              <span className="block text-sm font-bold text-foreground group-hover:text-sky-400 transition-colors">Scene 9</span>
+              <span className="text-[11px] text-muted-foreground">SUV Model Car</span>
+            </div>
+            <span className="text-xs text-muted-foreground group-hover:text-sky-400 transition-colors">→</span>
+          </Link> 
         </div>
 
         {/* Structured Column Footer */}
@@ -128,7 +140,7 @@ export const HomePage = () => {
               src="/logo.png" 
               alt="Logo Footer" 
               fill 
-              className="object-contain grayscale"
+              className="object-contain grayscale sizes-auto"
             />
           </div>
           <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
