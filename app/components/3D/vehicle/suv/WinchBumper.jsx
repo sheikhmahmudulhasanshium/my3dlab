@@ -55,11 +55,13 @@
  */
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { SUV_CONFIG } from "./suv_config";
 
 export default function BumperPackage() {
+  const [isLit, setIsLit] = useState(false);
+
   // Base coordinates matching vehicle boundaries
   const frontBumperY = SUV_CONFIG.frontBumperY || 0.48;
   const frontBumperZ = SUV_CONFIG.frontBumperZ || 2.01;
@@ -94,10 +96,11 @@ export default function BumperPackage() {
         roughness: 0.4,
         metalness: 0.8,
       }),
+      // Synchronized glowing behavior on click
       drlGlow: new THREE.MeshStandardMaterial({
-        color: "#f8fafc",
-        emissive: "#f1f5f9",
-        emissiveIntensity: 1.8,
+        color: isLit ? "#f8fafc" : "#94a3b8",
+        emissive: isLit ? "#f1f5f9" : "#000000",
+        emissiveIntensity: isLit ? 4.5 : 0.0,
         roughness: 0.1,
       }),
       lensCover: new THREE.MeshStandardMaterial({
@@ -111,7 +114,29 @@ export default function BumperPackage() {
         roughness: 0.5,
       }),
     };
+  }, [isLit]);
+
+  // Clean up pointer cursor on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.cursor = "auto";
+    };
   }, []);
+
+  const handlePointerOver = (e) => {
+    e.stopPropagation();
+    document.body.style.cursor = "pointer";
+  };
+
+  const handlePointerOut = (e) => {
+    e.stopPropagation();
+    document.body.style.cursor = "auto";
+  };
+
+  const toggleDRLs = (e) => {
+    e.stopPropagation();
+    setIsLit((prev) => !prev);
+  };
 
   return (
     <group>
@@ -163,7 +188,13 @@ export default function BumperPackage() {
 
         {/* D. Integrated Fog Lights / DRL Assemblies */}
         {[-1, 1].map((side) => (
-          <group key={`front-drl-${side}`} position={[side * (bumperWidth / 2 - 0.22), 0.02, 0.04]}>
+          <group 
+            key={`front-drl-${side}`} 
+            position={[side * (bumperWidth / 2 - 0.22), 0.02, 0.04]}
+            onClick={toggleDRLs}
+            onPointerOver={handlePointerOver}
+            onPointerOut={handlePointerOut}
+          >
             {/* Bezel */}
             <mesh castShadow material={materials.texturedPlastic}>
               <boxGeometry args={[0.16, 0.06, 0.04]} />
@@ -176,6 +207,17 @@ export default function BumperPackage() {
             <mesh position={[0, 0, 0.021]} material={materials.lensCover}>
               <boxGeometry args={[0.14, 0.04, 0.01]} />
             </mesh>
+
+            {/* Subtle glow projection on floor/surround when on */}
+            {isLit && (
+              <pointLight 
+                position={[0, 0, 0.08]} 
+                intensity={2.5} 
+                distance={3} 
+                decay={2} 
+                color="#f8fafc"
+              />
+            )}
           </group>
         ))}
       </group>

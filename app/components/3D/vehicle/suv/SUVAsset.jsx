@@ -138,14 +138,16 @@ import ChassisFrame from "./ChassisFrame";
 import Exhaust from "./Exhaust";
 import EngineBonnet from "./EngineBonnet";
 import CabinInterior from "./CabinInterior";
-import CabinRoofShell from "./CabinRoofShell"; // Import newly created Sunroof & Roof module
-import BodyPanels from "./BodyPanels"; // Import Phase 5 Body Panels Module
-import Doors from "./Doors"; // Import Phase 6 Doors & Windows Module
+import CabinRoofShell from "./CabinRoofShell";
+import BodyPanels from "./BodyPanels"; 
+import Doors from "./Doors"; 
 import WindshieldWipers from "./Windshield";
 import FrontGrille from "./FrontGrille";
-import LicensePlate from "./LicensePlate"; // Import Phase 7 License Plate Module
-import WinchBumper from "./WinchBumper";
-import Headlights from "./Headlights"; // Import Phase 8 Headlights Module
+import LicensePlate from "./LicensePlate"; 
+import Headlights from "./Headlights"; // Import corrected front lighting
+import BumperPackage from "./WinchBumper";
+import FenderGuards from "./FenderGuards";
+
 export default function SUVAsset({
   rotationSpeed = 0.5,
   steeringAngle = 0,
@@ -156,7 +158,7 @@ export default function SUVAsset({
     const elapsed = state.clock.getElapsedTime();
 
     if (globalGroupRef.current) {
-      // Scale frequency and amplitude uniformly with rolling speed to drive chassis bounce
+      // Dynamic chassis bounce simulation based on rolling speed
       const idleFreq = 3.0;
       const motionFreq = 12.0 * rotationSpeed;
       const activeFreq = rotationSpeed > 0 ? motionFreq : idleFreq;
@@ -165,16 +167,17 @@ export default function SUVAsset({
       const motionAmp = 0.012 * rotationSpeed;
       const activeAmp = rotationSpeed > 0 ? motionAmp : idleAmp;
 
-      // Apply uniform vertical bounce oscillation
       globalGroupRef.current.position.y = Math.sin(elapsed * activeFreq) * activeAmp;
     }
   });
 
   return (
     <group ref={globalGroupRef}>
-      
+      {/*Windsheild*/}
+      <WindshieldWipers rotationSpeed={rotationSpeed} />  
+
       {/* ============================================================
-          1. WHEELS ASSEMBLY (Phase 1 Modules)
+          1. WHEELS ASSEMBLY
          ============================================================ */}
       <group>
         {/* Front Left Wheel */}
@@ -217,52 +220,66 @@ export default function SUVAsset({
       </group>
 
       {/* ============================================================
-          2. CHASSIS FRAME & SUSPENSION (Phase 2 Modules)
+          2. CHASSIS FRAME & SUSPENSION
          ============================================================ */}
       <ChassisFrame steeringAngle={steeringAngle} />
 
       {/* ============================================================
-          3. EXHAUST SYSTEM (Phase 2 Modules)
+          3. EXHAUST SYSTEM
          ============================================================ */}
       <Exhaust />
 
       {/* ============================================================
-          4. ENGINE BAY & POWERTRAIN (Phase 3 Modules)
+          4. ENGINE BAY & POWERTRAIN
          ============================================================ */}
       <EngineBonnet />
 
       {/* ============================================================
-          5. CABIN INTERIOR LAYOUT (Phase 4 Modules)
+          5. CABIN INTERIOR LAYOUT
          ============================================================ */}
       <CabinInterior />
-{/* ============================================================
+
+      {/* ============================================================
           6. CABIN ROOF SHELL & PANORAMIC SUNROOF
          ============================================================ */}
       <CabinRoofShell 
-        // 1. Coordinates: [X-shift (left/right), Y-shift (up/down), Z-shift (forward/backward)]
         position={[0.0, -0.09, -0.37]} 
-        
-        // 2. Angles (in radians): [Pitch (nose up/down), Yaw (spin), Roll (tilt)]
         rotation={[-0.050, 0.0, 0.0]} 
-        
-        // 3. Scale: [Width scale, Height scale, Length/Z-scale]
         scale={[1, 0.9, 0.84]} 
       />
-{/* ============================================================
-          7. DOORS & WINDOWS (5 Doors, 7 Windows Layout)
-         ============================================================ */}
-<Doors 
-/>
-<WindshieldWipers/>
-<FrontGrille/>
-<LicensePlate/>
-<WinchBumper/>
-<Headlights/>
 
       {/* ============================================================
-          7. LOWER BODY PANELS (Phase 5 Modules)
+          7. DOORS & WINDOWS (Contains integrated animated tail lights)
          ============================================================ */}
-      <BodyPanels />
+      <Doors />
+
+      {/* ============================================================
+          8. FRONT GRILLE & HOOD EMBLEMS
+         ============================================================ */}
+      <FrontGrille />
+
+      {/* ============================================================
+          9. FRONT HEADLIGHTS ONLY
+         ============================================================ */}
+      <Headlights />
+
+      {/* ============================================================
+          10. FRONT/REAR LICENSE PLATES (Corrected projection bounds)
+         ============================================================ */}
+      <LicensePlate />
+
+      {/* ============================================================
+          11. BUMPERS & VALANCES (Corrected materials setup)
+         ============================================================ */}
+      <BumperPackage/>
+
+      {/* ============================================================
+          12. LOWER BODY PANELS
+         ============================================================ */}
+     { <BodyPanels />}
+
+      {/**Fender Guards */}
+      <FenderGuards/>
 
     </group>
   );

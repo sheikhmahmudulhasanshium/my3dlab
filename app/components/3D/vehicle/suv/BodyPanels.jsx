@@ -1,24 +1,7 @@
-/**
- *
- *                         SUV SIDE PROFILE
- *
- *              _________________________________
- *             /                                 \____
- *      ______/                                       \
- *     /                                               |
- *    /                                                |  <- Rear Cargo Box
- *   |                                                 |
- *   |_________________________________________________|  <- High Beltline
- *   |                                                 |
- *   |                                                 |  <- Lower Sill Wall
- *    \                                               /
- *     \___       ( Front Arch )     ( Rear Arch ) __/
- *         \_____/             \_____/              \
- *
- */
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
+import * as THREE from "three";
 import { SUV_CONFIG } from "./suv_config";
 
 export default function BodyPanels() {
@@ -27,7 +10,6 @@ export default function BodyPanels() {
   const bodyWidth = SUV_CONFIG.bodyHalfWidth * 2; // ~1.56m
   const halfWidth = SUV_CONFIG.bodyHalfWidth !== undefined ? SUV_CONFIG.bodyHalfWidth : 0.78;
   const fenderShoulderWidth = 0.14; 
-  const fenderBeltY = 0.97;
   const beltlineY = 0.97; 
 
   // Longitudinal (Z-axis) limits for the door cavities
@@ -59,13 +41,83 @@ export default function BodyPanels() {
   const sideInsetX = halfWidth - 0.015;
 
   // Localized Pillar Heights (accounting for the aerodynamic roof slope)
-  // B-Pillar is at Z = 0.10 (Roof height ~1.465m) -> Exact space Y: 0.495m
   const bPillarHeight = 0.49;
   const bPillarY = beltlineY + bPillarHeight / 2; // 1.215m
 
-  // C-Pillar is at Z = -0.55 (Roof height ~1.427m) -> Exact space Y: 0.457m
   const cPillarHeight = 0.45;
   const cPillarY = beltlineY + cPillarHeight / 2; // 1.195m
+
+  // ============================================================
+  // CUSTOM SHAPED PANEL GEOMETRIES (Z-Y Plane Profiles)
+  // ============================================================
+  const frontFenderShape = useMemo(() => {
+    const shape = new THREE.Shape();
+    const frontZ = SUV_CONFIG.frontAxleZ !== undefined ? SUV_CONFIG.frontAxleZ : 1.25;
+    const axleY = SUV_CONFIG.axleY !== undefined ? SUV_CONFIG.axleY : 0.44;
+    const archRadius = SUV_CONFIG.wheelArchRadius !== undefined ? SUV_CONFIG.wheelArchRadius : 0.42;
+
+    const frontEdgeZ = 1.85;
+    const rearEdgeZ = 0.78;
+
+    // Aligned heights matching the 4.3-degree slope of the shoulder trim
+    const rearY = 1.00;   
+    const frontY = 0.92;  
+
+    // Start at sloped front tip (directly over headlight)
+    shape.moveTo(frontEdgeZ, frontY);
+    // Slopes up to the door split running parallel to the bonnet
+    shape.lineTo(rearEdgeZ, rearY);
+    // Drops straight down at the door joint
+    shape.lineTo(rearEdgeZ, 0.44);
+    // Runs flat to the wheel arch start
+    shape.lineTo(frontZ - archRadius, 0.44);
+    // Semicircular cutout
+    shape.absarc(frontZ, axleY, archRadius, Math.PI, 0, true);
+    // Runs flat to front bottom corner
+    shape.lineTo(frontEdgeZ, 0.44);
+    // Goes straight up to close at sloped starting tip
+    shape.lineTo(frontEdgeZ, frontY);
+
+    return shape;
+  }, []);
+
+  const rearQuarterShape = useMemo(() => {
+    const shape = new THREE.Shape();
+    const rearZ = SUV_CONFIG.rearAxleZ !== undefined ? SUV_CONFIG.rearAxleZ : -0.95;
+    const axleY = SUV_CONFIG.axleY !== undefined ? SUV_CONFIG.axleY : 0.44;
+    const archRadius = SUV_CONFIG.wheelArchRadius !== undefined ? SUV_CONFIG.wheelArchRadius : 0.42;
+
+    const frontEdgeZ = -0.53;
+    const rearEdgeZ = -1.72;
+
+    // Modified to be triangular over the rear seats:
+    // - Start low at the front door split (0.44m beltline height)
+    shape.moveTo(frontEdgeZ, 0.44);
+    // - Slopes diagonally up to the C-pillar base (1.03m) at Z = -1.05m
+    shape.lineTo(-1.05, 1.03);
+    // - Runs flat along the rear cargo quarter
+    shape.lineTo(rearEdgeZ, 1.03);
+    // - Goes straight down to rear bottom corner
+    shape.lineTo(rearEdgeZ, 0.44);
+    // - Runs flat to the rear edge of the wheel arch
+    shape.lineTo(rearZ - archRadius, 0.44);
+    // - Semicircular wheel arch cutout
+    shape.absarc(rearZ, axleY, archRadius, Math.PI, 0, true);
+    // - Runs flat back to front bottom corner to complete the loop
+    shape.lineTo(frontEdgeZ, 0.44);
+
+    return shape;
+  }, []);
+
+  const extrudeSettings = useMemo(() => ({
+    depth: 0.02,
+    bevelEnabled: false,
+  }), []);
+
+  // Sleek 4.3-degree slope angle (0.075 rad) to run perfectly parallel to the bonnet
+  const shoulderRotationX = 0.075; 
+  // Positioned so the front edge lands at exactly 0.92m, sealing the headlight gap
+  const shoulderTrimY = 0.955; 
 
   return (
     <group>
@@ -73,13 +125,13 @@ export default function BodyPanels() {
           A. LOWER BODY & AERODYNAMIC ROCKER SILL GUARDS
          ============================================================ */}
       <group>
-        {/* Left Tucked Rocker Guard (Contoured slightly inward for underbody airflow) */}
-        <mesh castShadow receiveShadow position={[-halfWidth - 0.005, SUV_CONFIG.rockerTrimY, 0.125]}>
+        {/* Left Tucked Rocker Guard */}
+        <mesh castShadow receiveShadow position={[-halfWidth - 0.005, SUV_CONFIG.rockerTrimY || 0.42, 0.125]}>
           <boxGeometry args={[0.025, 0.08, totalDoorSpanLength - 0.05]} />
           <meshStandardMaterial color={trimColor} roughness={0.7} />
         </mesh>
         {/* Right Tucked Rocker Guard */}
-        <mesh castShadow receiveShadow position={[halfWidth + 0.005, SUV_CONFIG.rockerTrimY, 0.125]}>
+        <mesh castShadow receiveShadow position={[halfWidth + 0.005, SUV_CONFIG.rockerTrimY || 0.42, 0.125]}>
           <boxGeometry args={[0.025, 0.08, totalDoorSpanLength - 0.05]} />
           <meshStandardMaterial color={trimColor} roughness={0.7} />
         </mesh>
@@ -90,22 +142,28 @@ export default function BodyPanels() {
          ============================================================ */}
       {/* LEFT FRONT FENDER */}
       <group position={[-halfWidth, 0, 0]}>
-        <mesh castShadow receiveShadow position={[fenderShoulderWidth / 2, fenderBeltY, 1.35]}>
+        {/* Fender Shoulder Trim (Seamless alignment parallel to bonnet) */}
+        <mesh 
+          castShadow 
+          receiveShadow 
+          position={[fenderShoulderWidth / 2, shoulderTrimY, 1.35]}
+          rotation={[shoulderRotationX, 0, 0]}
+        >
           <boxGeometry args={[fenderShoulderWidth, 0.02, 1.0]} />
           <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
         </mesh>
-        <mesh castShadow receiveShadow position={[0, 0.68, 1.785]}>
-          <boxGeometry args={[0.02, 0.48, 0.13]} />
+        
+        {/* Custom Semicircular Front Fender Side Sheet */}
+        <mesh 
+          castShadow 
+          receiveShadow 
+          position={[0, 0, 0]} 
+          rotation={[0, -Math.PI / 2, 0]}
+        >
+          <extrudeGeometry args={[frontFenderShape, extrudeSettings]} />
           <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
         </mesh>
-        <mesh castShadow receiveShadow position={[0, 0.68, 0.965]}>
-          <boxGeometry args={[0.02, 0.48, 0.37]} />
-          <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
-        </mesh>
-        <mesh castShadow position={[0, 0.86, 1.25]}>
-          <boxGeometry args={[0.02, 0.18, 0.94]} />
-          <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
-        </mesh>
+
         {/* Front Aero Spats / Air Deflector (In front of front tire) */}
         <mesh position={[0.01, 0.45, 1.30]}>
           <boxGeometry args={[0.015, 0.15, 0.05]} />
@@ -115,22 +173,28 @@ export default function BodyPanels() {
 
       {/* RIGHT FRONT FENDER */}
       <group position={[halfWidth, 0, 0]}>
-        <mesh castShadow receiveShadow position={[-fenderShoulderWidth / 2, fenderBeltY, 1.35]}>
+        {/* Fender Shoulder Trim (Seamless alignment parallel to bonnet) */}
+        <mesh 
+          castShadow 
+          receiveShadow 
+          position={[-fenderShoulderWidth / 2, shoulderTrimY, 1.35]}
+          rotation={[shoulderRotationX, 0, 0]}
+        >
           <boxGeometry args={[fenderShoulderWidth, 0.02, 1.0]} />
           <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
         </mesh>
-        <mesh castShadow receiveShadow position={[0, 0.68, 1.785]}>
-          <boxGeometry args={[0.02, 0.48, 0.13]} />
+        
+        {/* Custom Semicircular Front Fender Side Sheet (Offset -0.02 to extrude inward) */}
+        <mesh 
+          castShadow 
+          receiveShadow 
+          position={[-0.02, 0, 0]} 
+          rotation={[0, -Math.PI / 2, 0]}
+        >
+          <extrudeGeometry args={[frontFenderShape, extrudeSettings]} />
           <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
         </mesh>
-        <mesh castShadow receiveShadow position={[0, 0.68, 0.965]}>
-          <boxGeometry args={[0.02, 0.48, 0.37]} />
-          <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
-        </mesh>
-        <mesh castShadow position={[0, 0.86, 1.25]}>
-          <boxGeometry args={[0.02, 0.18, 0.94]} />
-          <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
-        </mesh>
+
         {/* Front Aero Spats / Air Deflector */}
         <mesh position={[-0.01, 0.45, 1.30]}>
           <boxGeometry args={[0.015, 0.15, 0.05]} />
@@ -174,7 +238,7 @@ export default function BodyPanels() {
       </group>
 
       {/* ============================================================
-          D. REAR SIDE QUARTER PANELS (With Integrated Aero Spats)
+          D. REAR SIDE QUARTER PANELS (With Swept Triangular Profile)
          ============================================================ */}
       {/* LEFT REAR QUARTER ASSEMBLY */}
       <group position={[-halfWidth, 0, 0]}>
@@ -182,15 +246,18 @@ export default function BodyPanels() {
           <boxGeometry args={[0.02, 0.38, 0.04]} />
           <meshStandardMaterial color={trimColor} roughness={0.8} />
         </mesh>
-        <mesh castShadow receiveShadow position={[0, 0.76, -1.545]}>
-          <boxGeometry args={[0.02, 0.54, 0.35]} />
+        
+        {/* Custom Swept Rear Quarter Side Sheet */}
+        <mesh 
+          castShadow 
+          receiveShadow 
+          position={[0, 0, 0]} 
+          rotation={[0, -Math.PI / 2, 0]}
+        >
+          <extrudeGeometry args={[rearQuarterShape, extrudeSettings]} />
           <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
         </mesh>
 
-        <mesh castShadow position={[0, 0.94, -0.95]}>
-          <boxGeometry args={[0.02, 0.18, 0.84]} />
-          <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
-        </mesh>
         {/* Rear Wheel Arch Air Deflector */}
         <mesh position={[0.01, 0.45, -0.50]}>
           <boxGeometry args={[0.015, 0.15, 0.05]} />
@@ -204,14 +271,18 @@ export default function BodyPanels() {
           <boxGeometry args={[0.02, 0.38, 0.04]} />
           <meshStandardMaterial color={trimColor} roughness={0.8} />
         </mesh>
-        <mesh castShadow receiveShadow position={[0, 0.76, -1.545]}>
-          <boxGeometry args={[0.02, 0.54, 0.35]} />
+        
+        {/* Custom Swept Rear Quarter Side Sheet (Offset -0.02 to extrude inward) */}
+        <mesh 
+          castShadow 
+          receiveShadow 
+          position={[-0.02, 0, 0]} 
+          rotation={[0, -Math.PI / 2, 0]}
+        >
+          <extrudeGeometry args={[rearQuarterShape, extrudeSettings]} />
           <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
         </mesh>
-        <mesh castShadow position={[0, 0.94, -0.95]}>
-          <boxGeometry args={[0.02, 0.18, 0.84]} />
-          <meshStandardMaterial color={bodyPaintColor} roughness={0.3} metalness={0.7} />
-        </mesh>
+
         {/* Rear Wheel Arch Air Deflector */}
         <mesh position={[-0.01, 0.45, -0.50]}>
           <boxGeometry args={[0.015, 0.15, 0.05]} />
@@ -296,7 +367,7 @@ export default function BodyPanels() {
         </mesh>
       </group>
 
-      {/* 3. B-PILLARS (Vertical pillar separating front and back side doors) */}
+      {/* 3. B-PILLARS */}
       <group>
         {/* Left Flush B-Pillar */}
         <mesh castShadow position={[-sideInsetX, bPillarY, bPillarCenterZ]}>
@@ -310,7 +381,7 @@ export default function BodyPanels() {
         </mesh>
       </group>
 
-      {/* 4. C-PILLARS (Shortened to sit perfectly below the sloped roof profile) */}
+      {/* 4. C-PILLARS */}
       <group>
         {/* Left C-Pillar */}
         <mesh castShadow position={[-sideInsetX, cPillarY, rearQuarterFrontZ]}>

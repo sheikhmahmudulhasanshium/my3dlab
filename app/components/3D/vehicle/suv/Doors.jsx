@@ -128,13 +128,14 @@ export default function Doors({
   const tailgateHingeZ = tailgateRoofZ; 
 
   // ============================================================
-  // INTERACTIVE STATES (Defaults to Closed)
+  // INTERACTIVE STATES
   // ============================================================
   const [isFLOpen, setIsFLOpen] = useState(false);
   const [isFROpen, setIsFROpen] = useState(false);
   const [isRLOpen, setIsRLOpen] = useState(false);
   const [isRROpen, setIsRROpen] = useState(false);
   const [isTailgateOpen, setIsTailgateOpen] = useState(false);
+  const [isTailLightLit, setIsTailLightLit] = useState(false);
 
   // References for rotational updates
   const flRef = useRef(null);
@@ -142,6 +143,9 @@ export default function Doors({
   const rlRef = useRef(null);
   const rrRef = useRef(null);
   const tailgateRef = useRef(null);
+
+  // Check if any exterior door panel is currently open to trigger interior light
+  const isAnyDoorOpen = isFLOpen || isFROpen || isRLOpen || isRROpen || isTailgateOpen;
 
   // ============================================================
   // ANIMATION LOOPS
@@ -202,19 +206,19 @@ export default function Doors({
         metalness: 0.1,
       }),
       rearRedGlow: new THREE.MeshStandardMaterial({
-        color: "#dc2626",
-        emissive: "#ef4444",
-        emissiveIntensity: 2.2,
+        color: isTailLightLit ? "#dc2626" : "#450a0a",
+        emissive: isTailLightLit ? "#ef4444" : "#000000",
+        emissiveIntensity: isTailLightLit ? 3.0 : 0.0,
       }),
       rearAmberGlow: new THREE.MeshStandardMaterial({
-        color: "#d97706",
-        emissive: "#f59e0b",
-        emissiveIntensity: 1.8,
+        color: isTailLightLit ? "#d97706" : "#451a03",
+        emissive: isTailLightLit ? "#f59e0b" : "#000000",
+        emissiveIntensity: isTailLightLit ? 2.5 : 0.0,
       }),
       rearWhiteGlow: new THREE.MeshStandardMaterial({
-        color: "#f1f5f9",
-        emissive: "#e2e8f0",
-        emissiveIntensity: 1.5,
+        color: isTailLightLit ? "#f1f5f9" : "#1e293b",
+        emissive: isTailLightLit ? "#e2e8f0" : "#000000",
+        emissiveIntensity: isTailLightLit ? 2.0 : 0.0,
       }),
       lensCoverRed: new THREE.MeshStandardMaterial({
         color: "#991b1b",
@@ -223,7 +227,7 @@ export default function Doors({
         roughness: 0.05,
       }),
     };
-  }, []);
+  }, [isTailLightLit]);
 
   // ============================================================
   // DOOR PANEL GEOMETRIES
@@ -383,6 +387,21 @@ export default function Doors({
   return (
     <group position={position} rotation={rotation} scale={scale}>
       
+      {/* 
+        A. AUTOMATIC INTERIOR DOME LIGHT
+        Turns on automatically when any door/tailgate is opened, casting light inside out 
+      */}
+      {isAnyDoorOpen && (
+        <pointLight 
+          position={[0, 1.15, -0.20]} 
+          intensity={4.0} 
+          distance={7} 
+          decay={1.6} 
+          color="#fef08a" // Warm yellow cabin ambiance
+          castShadow
+        />
+      )}
+
       {/* ============================================================
           FRONT LEFT DOOR
          ============================================================ */}
@@ -609,7 +628,7 @@ export default function Doors({
       </mesh>
 
       {/* ============================================================
-          5TH DOOR: TAILGATE ASSEMBLY (WITH CORRECTED OUTWARD LIGHT PATHS)
+          5TH DOOR: TAILGATE ASSEMBLY (WITH INTERACTIVE LIGHTING)
          ============================================================ */}
       <group 
         ref={tailgateRef}
@@ -639,12 +658,10 @@ export default function Doors({
             <meshStandardMaterial color={trimColor} roughness={0.8} />
           </mesh>
 
-          {/* Integrated Tailgate Tail Light Clusters (Sitting proud of the exterior tailgate face at Z = -1.745) */}
+          {/* Integrated Tailgate Tail Light Clusters */}
           {[-1, 1].map((side) => {
             const localTailLightX = side * 0.58; 
             const localTailLightY = 0.78; 
-            
-            // Re-calculated Z-plane pushing the tail lights backward (-Z direction) past the tailgate panel
             const localTailLightZ = tailgateRearmostZ - (tailgateThickness / 2) - 0.015; 
 
             return (
@@ -652,6 +669,12 @@ export default function Doors({
                 key={`tailgate-light-${side}`} 
                 position={[localTailLightX, localTailLightY, localTailLightZ]}
                 rotation={[0, Math.PI, 0]} // Face backward
+                onClick={(e) => {
+                  e.stopPropagation(); // Avoid triggering open/close on the parent tailgate
+                  setIsTailLightLit(!isTailLightLit);
+                }}
+                onPointerOver={handlePointerOver}
+                onPointerOut={handlePointerOut}
               >
                 {/* 1. Outer Lamp Case */}
                 <mesh castShadow material={lightingMaterials.housingMatteBlack}>
@@ -685,6 +708,17 @@ export default function Doors({
                 <mesh position={[0, 0, 0.012]} material={lightingMaterials.lensCoverRed}>
                   <boxGeometry args={[0.202, 0.112, 0.006]} />
                 </mesh>
+
+                {/* 7. Backward facing pointLight source projected on click */}
+                {isTailLightLit && (
+                  <pointLight 
+                    position={[0, 0, -0.15]} 
+                    intensity={1.8} 
+                    distance={3.5} 
+                    decay={2} 
+                    color="#ef4444" // Projects red safety illumination backward
+                  />
+                )}
               </group>
             );
           })}

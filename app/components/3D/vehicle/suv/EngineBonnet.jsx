@@ -102,12 +102,10 @@
  *                          ↓
  *                     [ LATCH / STRIKER ]
  *
- */
-"use client";
+ */"use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { DoubleSide } from "three";
 import * as THREE from "three";
 import { SUV_CONFIG } from "./suv_config";
 
@@ -115,20 +113,22 @@ export default function EngineBonnet() {
   const bonnetRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const bonnetWidth = SUV_CONFIG.bodyHalfWidth * 2; // 1.56m
+  const halfWidth = SUV_CONFIG.bodyHalfWidth !== undefined ? SUV_CONFIG.bodyHalfWidth : 0.78;
+  const fenderShoulderWidth = 0.14; 
+  
+  // Bonnet sits directly between the side fender shoulders
+  const bonnetWidth = (halfWidth - fenderShoulderWidth) * 2 - 0.01; // ~1.27m
   const bonnetRearZ = 1.15;
   const bonnetFrontZ = 1.85;
   const bonnetLength = bonnetFrontZ - bonnetRearZ; // 0.70m
-  const bonnetThickness = 0.012;
 
-  // Corrected Low-Profile Heights
-  const bonnetY = 1.02;      // Windshield base cowl height
-  const bonnetLatchY = 0.92; // Front nose height
+  // Heights for a flush closed fit
+  const bonnetY = 0.985;      // Rear hinge/cowl height
+  const bonnetLatchY = 0.93; // Front nose height matching grille top
 
   // Center coordinate math for sloped alignment
   const centerZ = (bonnetFrontZ + bonnetRearZ) / 2; // 1.50m
-  const centerY = (bonnetY + bonnetLatchY) / 2; // 0.97m center height
-  const slopeAngle = 0.143; // ~8.2 degrees down-slope
+  const slopeAngle = 0.075; // ~4.3 degrees down-slope (0.075 rad)
 
   // ============================================================
   // PROCEDURAL HIGH-FIDELITY MATERIALS
@@ -167,6 +167,9 @@ export default function EngineBonnet() {
       ),
       blue: (
         <meshStandardMaterial color="#2563eb" roughness={0.4} />
+      ),
+      red: (
+        <meshStandardMaterial color="#dc2626" roughness={0.4} />
       ),
     };
   }, []);
@@ -214,36 +217,41 @@ export default function EngineBonnet() {
           A. INNER STRUCTURAL FENDER WALLS, FLOOR & FIREWALL
          ======================================================== */}
       <group>
-        {/* Left Fender Inner Drop Wall */}
-        <mesh position={[-SUV_CONFIG.bodyHalfWidth + 0.05, 0.65, centerZ]} castShadow>
+        {/* Left Fender Inner Drop Wall (Lowered to 0.76m and rotated to align with the sloped bonnet edge) */}
+        <mesh 
+          position={[-(halfWidth - 0.05), 0.76, centerZ]} 
+          rotation={[slopeAngle, 0, 0]}
+          castShadow
+        >
           <boxGeometry args={[0.02, 0.25, bonnetLength]} />
           {engineMaterials.engineBlockDark}
         </mesh>
 
-        {/* Right Fender Inner Drop Wall */}
-        <mesh position={[SUV_CONFIG.bodyHalfWidth - 0.05, 0.65, centerZ]} castShadow>
+        {/* Right Fender Inner Drop Wall (Lowered to 0.76m and rotated to align with the sloped bonnet edge) */}
+        <mesh 
+          position={[halfWidth - 0.05, 0.76, centerZ]} 
+          rotation={[slopeAngle, 0, 0]}
+          castShadow
+        >
           <boxGeometry args={[0.02, 0.25, bonnetLength]} />
           {engineMaterials.engineBlockDark}
         </mesh>
 
         {/* Engine Compartment Floor Plate */}
         <mesh position={[0, 0.54, centerZ]} castShadow receiveShadow>
-          <boxGeometry args={[bonnetWidth - 0.12, 0.02, bonnetLength]} />
+          <boxGeometry args={[bonnetWidth - 0.04, 0.02, bonnetLength]} />
           {engineMaterials.rubber}
         </mesh>
 
         {/* Vertical Firewall/Bulkhead Plate (Mounted at Z=1.15m) */}
         <mesh position={[0, 0.72, bonnetRearZ]} castShadow>
-          <boxGeometry args={[bonnetWidth - 0.10, 0.35, 0.02]} />
+          <boxGeometry args={[bonnetWidth - 0.02, 0.35, 0.02]} />
           {engineMaterials.engineBlockDark}
         </mesh>
 
-        {/* 
-          HORIZONTAL STRUCTURAL COWL WIPER TRAY
-          Bridges the gap between the Windshield cowl (0.95m) and the Bonnet rear (1.15m)
-        */}
+        {/* Horizontal Structural Cowl Wiper Tray */}
         <mesh position={[0, 1.015, 1.05]} castShadow receiveShadow>
-          <boxGeometry args={[bonnetWidth, 0.015, 0.20]} /> {/* 20cm deep cowl tray */}
+          <boxGeometry args={[halfWidth * 2, 0.015, 0.20]} />
           {engineMaterials.engineBlockDark}
         </mesh>
       </group>
@@ -285,7 +293,7 @@ export default function EngineBonnet() {
         </group>
 
         {/* Air Filter Box */}
-        <group position={[SUV_CONFIG.airBoxX, 0.68, 1.35]}>
+        <group position={[SUV_CONFIG.airBoxX || 0.45, 0.68, 1.35]}>
           <mesh castShadow>
             <boxGeometry args={[0.18, 0.12, 0.20]} />
             {engineMaterials.plastic}
@@ -301,7 +309,7 @@ export default function EngineBonnet() {
         </group>
 
         {/* 12V Battery */}
-        <group position={[-SUV_CONFIG.batteryX, 0.68, 1.35]}>
+        <group position={[-(SUV_CONFIG.batteryX || 0.45), 0.68, 1.35]}>
           <mesh castShadow>
             <boxGeometry args={[0.16, 0.12, 0.18]} />
             {engineMaterials.plastic}
@@ -321,12 +329,12 @@ export default function EngineBonnet() {
         </group>
 
         {/* Fuse Box & ECU */}
-        <mesh castShadow position={[-SUV_CONFIG.fuseBoxX, 0.68, 1.25]}>
+        <mesh castShadow position={[-(SUV_CONFIG.fuseBoxX || 0.40), 0.68, 1.25]}>
           <boxGeometry args={[0.13, 0.10, 0.15]} />
           {engineMaterials.plastic}
         </mesh>
 
-        <mesh castShadow position={[SUV_CONFIG.ecuX, 0.68, 1.22]} rotation={[0, -0.15, 0.05]}>
+        <mesh castShadow position={[SUV_CONFIG.ecuX || 0.40, 0.68, 1.22]} rotation={[0, -0.15, 0.05]}>
           <boxGeometry args={[0.04, 0.11, 0.14]} />
           {engineMaterials.aluminum}
         </mesh>
@@ -361,7 +369,7 @@ export default function EngineBonnet() {
         </group>
 
         {/* Coolant Expansion Reservoir */}
-        <group position={[SUV_CONFIG.coolantReservoirX, 0.72, 1.62]}>
+        <group position={[SUV_CONFIG.coolantReservoirX || 0.35, 0.72, 1.62]}>
           <mesh castShadow>
             <cylinderGeometry args={[0.04, 0.04, 0.10, 12]} />
             {engineMaterials.blue}
@@ -373,7 +381,7 @@ export default function EngineBonnet() {
         </group>
 
         {/* Brake Vacuum Booster */}
-        <group position={[-SUV_CONFIG.brakeBoosterX, 0.76, 1.20]} rotation={[0, Math.PI / 2, 0]}>
+        <group position={[-(SUV_CONFIG.brakeBoosterX || 0.35), 0.76, 1.20]} rotation={[0, Math.PI / 2, 0]}>
           <mesh castShadow rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.08, 0.09, 0.05, 20]} />
             {engineMaterials.plastic}
@@ -390,23 +398,23 @@ export default function EngineBonnet() {
       </group>
 
       {/* ========================================================
-          C. ANIMATED CENTRAL BONNET (Pivots at Z=1.15m, Y=1.02m)
-          ======================================================== */}
+          C. ANIMATED CENTRAL BONNET (Pivots at Z=1.15m, Y=0.985m)
+         ======================================================== */}
       <group
         ref={bonnetRef}
-        position={[0, bonnetY, bonnetRearZ]} // Pivot mounted at Z=1.15m, Y=1.02m
+        position={[0, bonnetY, bonnetRearZ]} 
         onClick={toggleBonnet}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
       >
-        <group position={[0, -0.04, bonnetLength / 2]}>
+        <group position={[0, -0.015, bonnetLength / 2]}>
           <mesh castShadow receiveShadow>
             <boxGeometry args={[bonnetWidth, 0.03, bonnetLength]} />
             {engineMaterials.bodyPaint}
           </mesh>
 
           <mesh position={[0, -0.02, 0]} castShadow>
-            <boxGeometry args={[bonnetWidth - 0.12, 0.015, bonnetLength - 0.12]} />
+            <boxGeometry args={[bonnetWidth - 0.08, 0.015, bonnetLength - 0.08]} />
             {engineMaterials.engineBlockDark}
           </mesh>
 
