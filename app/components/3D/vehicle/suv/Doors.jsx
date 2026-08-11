@@ -46,7 +46,6 @@ import { SUV_CONFIG } from "./suv_config";
 // EXTERIOR GRAB HANDLE ASSEMBLY (EXACT GEOMETRY)
 // ============================================================
 function SideDoorHandle({ x, y, z, trimColor, isRight = false }) {
-  // Dynamically flip the pull bar offset to cancel out the parent's scale={[1, 1, -1]} mirroring
   const zOffset = isRight ? -0.02 : 0.02;
 
   return (
@@ -92,7 +91,7 @@ export default function Doors({
   // 4. Rear Passenger Door Coordinates [Z, Y]
   r_p1_bottomFront = [-0.22, 0.52],  
   r_p2_bottomRear = [-0.78, 0.52],   
-  r_p3_archCurve = [-1.05, 0.84],    // Raised 20% higher (from 0.78 to 0.84)
+  r_p3_archCurve = [-1.05, 0.84],    
   r_p4_topRear = [-1.05, 1.40],      
   r_p5_topFront = [-0.22, 1.45],     
   rearDoorThickness = 0.04,
@@ -145,7 +144,7 @@ export default function Doors({
   const tailgateRef = useRef(null);
 
   // ============================================================
-  // ANIMATION LOOPS (WIDER DOOR OPEN ANGLES)
+  // ANIMATION LOOPS
   // ============================================================
   useFrame((state, delta) => {
     const targetFL = isFLOpen ? 1.45 : 0;
@@ -154,7 +153,6 @@ export default function Doors({
     const targetRR = isRROpen ? -1.40 : 0;
     const targetTailgate = isTailgateOpen ? 1.50 : 0; 
 
-    // Smooth physics-based dampening
     if (flRef.current) {
       flRef.current.rotation.y = THREE.MathUtils.damp(flRef.current.rotation.y, targetFL, 8, delta);
     }
@@ -172,7 +170,6 @@ export default function Doors({
     }
   });
 
-  // Handle Cursor Hover State Cleanup
   useEffect(() => {
     return () => {
       document.body.style.cursor = "auto";
@@ -190,7 +187,46 @@ export default function Doors({
   };
 
   // ============================================================
-  // CUSTOM SHAPES FOR INNER LEATHER DOOR CARDS
+  // TAILGATE INTEGRATED LIGHTING MATERIALS
+  // ============================================================
+  const lightingMaterials = useMemo(() => {
+    return {
+      housingChrome: new THREE.MeshStandardMaterial({
+        color: "#cbd5e1",
+        roughness: 0.1,
+        metalness: 0.9,
+      }),
+      housingMatteBlack: new THREE.MeshStandardMaterial({
+        color: "#0f172a",
+        roughness: 0.8,
+        metalness: 0.1,
+      }),
+      rearRedGlow: new THREE.MeshStandardMaterial({
+        color: "#dc2626",
+        emissive: "#ef4444",
+        emissiveIntensity: 2.2,
+      }),
+      rearAmberGlow: new THREE.MeshStandardMaterial({
+        color: "#d97706",
+        emissive: "#f59e0b",
+        emissiveIntensity: 1.8,
+      }),
+      rearWhiteGlow: new THREE.MeshStandardMaterial({
+        color: "#f1f5f9",
+        emissive: "#e2e8f0",
+        emissiveIntensity: 1.5,
+      }),
+      lensCoverRed: new THREE.MeshStandardMaterial({
+        color: "#991b1b",
+        transparent: true,
+        opacity: 0.35,
+        roughness: 0.05,
+      }),
+    };
+  }, []);
+
+  // ============================================================
+  // DOOR PANEL GEOMETRIES
   // ============================================================
   const frontDoorCardGeometry = useMemo(() => {
     const shape = new THREE.Shape();
@@ -211,13 +247,12 @@ export default function Doors({
 
   const rearDoorCardGeometry = useMemo(() => {
     const shape = new THREE.Shape();
-    // Dog-leg pattern stepping up to clear the wheel arch
     shape.moveTo(-0.25, 0.54);
     shape.lineTo(-0.75, 0.54);
-    shape.lineTo(-0.75, 0.86); // Rises vertically inside the arch notch
-    shape.lineTo(-1.02, 0.86); // Steppes horizontally to the rear edge
-    shape.lineTo(-1.02, 0.95); // Up to the beltline bottom
-    shape.lineTo(-0.25, 0.95); // Across to B-pillar edge
+    shape.lineTo(-0.75, 0.86); 
+    shape.lineTo(-1.02, 0.86); 
+    shape.lineTo(-1.02, 0.95); 
+    shape.lineTo(-0.25, 0.95); 
     shape.closePath();
 
     return new THREE.ExtrudeGeometry(shape, {
@@ -229,9 +264,6 @@ export default function Doors({
     });
   }, []);
 
-  // ============================================================
-  // DOOR PANEL GEOMETRIES (REVERTED ORIGINAL CODES)
-  // ============================================================
   const frontDoorGeometry = useMemo(() => {
     const shape = new THREE.Shape();
     shape.moveTo(f_p1_bottomFront[0], f_p1_bottomFront[1]);
@@ -471,7 +503,7 @@ export default function Doors({
             <meshStandardMaterial color={windowColor} roughness={0.1} metalness={0.9} transparent opacity={0.8} depthWrite={false} />
           </mesh>
           
-          {/* Custom Extruded Leather Inner Trim Card (Notched around Rear Wheel Arch) */}
+          {/* Custom Extruded Leather Inner Trim Card */}
           <mesh position={[0, 0, -0.02]} castShadow receiveShadow geometry={rearDoorCardGeometry}>
             <meshStandardMaterial color="#3d2314" roughness={0.8} metalness={0.15} />
           </mesh>
@@ -522,7 +554,7 @@ export default function Doors({
             <meshStandardMaterial color={windowColor} roughness={0.1} metalness={0.9} transparent opacity={0.8} depthWrite={false} />
           </mesh>
           
-          {/* Custom Extruded Leather Inner Trim Card (Notched around Rear Wheel Arch) */}
+          {/* Custom Extruded Leather Inner Trim Card */}
           <mesh position={[0, 0, -0.02]} castShadow receiveShadow geometry={rearDoorCardGeometry}>
             <meshStandardMaterial color="#3d2314" roughness={0.8} metalness={0.15} />
           </mesh>
@@ -577,7 +609,7 @@ export default function Doors({
       </mesh>
 
       {/* ============================================================
-          5TH DOOR: TAILGATE ASSEMBLY
+          5TH DOOR: TAILGATE ASSEMBLY (WITH CORRECTED OUTWARD LIGHT PATHS)
          ============================================================ */}
       <group 
         ref={tailgateRef}
@@ -589,23 +621,75 @@ export default function Doors({
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
         >
-          
+          {/* Lower Tailgate Main Cover Body Block */}
           <mesh castShadow receiveShadow position={[0, tailgateLowerMidY, tailgateRearmostZ]}>
             <boxGeometry args={[tailgateWidth, tailgateLowerHeight, tailgateThickness]} />
             <meshStandardMaterial color={doorColor} roughness={0.4} metalness={0.5} />
           </mesh>
 
+          {/* License plate recess styling pocket */}
           <mesh position={[0, tailgateLowerMidY + 0.05, tailgateRearmostZ + tailgateThickness / 2 + 0.001]}>
             <boxGeometry args={[0.42, 0.16, 0.005]} />
             <meshStandardMaterial color={trimColor} roughness={0.7} />
           </mesh>
 
-          {/* Corrected Tailgate Grab Handle on Tailgate Exterior Panel */}
+          {/* Grab Handle */}
           <mesh position={[0, 0.85, tailgateRearmostZ - tailgateThickness / 2 - 0.01]} castShadow>
             <boxGeometry args={[0.26, 0.02, 0.015]} />
             <meshStandardMaterial color={trimColor} roughness={0.8} />
           </mesh>
 
+          {/* Integrated Tailgate Tail Light Clusters (Sitting proud of the exterior tailgate face at Z = -1.745) */}
+          {[-1, 1].map((side) => {
+            const localTailLightX = side * 0.58; 
+            const localTailLightY = 0.78; 
+            
+            // Re-calculated Z-plane pushing the tail lights backward (-Z direction) past the tailgate panel
+            const localTailLightZ = tailgateRearmostZ - (tailgateThickness / 2) - 0.015; 
+
+            return (
+              <group 
+                key={`tailgate-light-${side}`} 
+                position={[localTailLightX, localTailLightY, localTailLightZ]}
+                rotation={[0, Math.PI, 0]} // Face backward
+              >
+                {/* 1. Outer Lamp Case */}
+                <mesh castShadow material={lightingMaterials.housingMatteBlack}>
+                  <boxGeometry args={[0.20, 0.11, 0.03]} />
+                </mesh>
+
+                {/* 2. Interior Chrome Reflector */}
+                <mesh position={[0, 0, 0.002]} material={lightingMaterials.housingChrome}>
+                  <boxGeometry args={[0.18, 0.09, 0.022]} />
+                </mesh>
+
+                {/* 3. Primary Brake LEDs ("R" Red Modules) */}
+                <mesh position={[-side * 0.03, 0.02, 0.006]} material={lightingMaterials.rearRedGlow}>
+                  <boxGeometry args={[0.05, 0.03, 0.01]} />
+                </mesh>
+                <mesh position={[side * 0.03, 0.02, 0.006]} material={lightingMaterials.rearRedGlow}>
+                  <boxGeometry args={[0.05, 0.03, 0.01]} />
+                </mesh>
+
+                {/* 4. Sequential Turn Indicators ("Y" Amber Modules) */}
+                <mesh position={[-side * 0.03, -0.022, 0.006]} material={lightingMaterials.rearAmberGlow}>
+                  <boxGeometry args={[0.05, 0.024, 0.01]} />
+                </mesh>
+
+                {/* 5. Reverse backup white lighting ("W" White Module) */}
+                <mesh position={[side * 0.03, -0.022, 0.006]} material={lightingMaterials.rearWhiteGlow}>
+                  <boxGeometry args={[0.05, 0.024, 0.01]} />
+                </mesh>
+
+                {/* 6. High-Luster Outer Protective Red Tinted Lens Cover */}
+                <mesh position={[0, 0, 0.012]} material={lightingMaterials.lensCoverRed}>
+                  <boxGeometry args={[0.202, 0.112, 0.006]} />
+                </mesh>
+              </group>
+            );
+          })}
+
+          {/* Upper Sloped Portion (Window Frame & Glass) */}
           <group position={[0, tailgateSlope.midY, tailgateSlope.midZ]} rotation={[tailgateSlope.angle, 0, 0]}>
             <mesh position={[-tailgateWidth / 2 + 0.04, 0, 0]} castShadow>
               <boxGeometry args={[0.08, tailgateSlope.length, tailgateThickness]} />

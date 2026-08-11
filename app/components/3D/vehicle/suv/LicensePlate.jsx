@@ -101,7 +101,7 @@ function EmbossedText() {
 // ============================================================
 // SINGLE LICENSE PLATE UNIT (Base Frame, Plate, Decals & Text)
 // ============================================================
-function PlateUnit({ borderScale = 1.0 }) {
+function PlateUnit() {
   const plateWidth = 0.34;
   const plateHeight = 0.14;
   const borderThickness = 0.012;
@@ -158,13 +158,20 @@ function PlateUnit({ borderScale = 1.0 }) {
 // MAIN COMPONENT (Renders both Front and Rear Mountings)
 // ============================================================
 export default function LicensePlate() {
-  // Front coordinates derived from configuration
-  const frontPlateY = SUV_CONFIG.frontBumperY || 0.55;
-  const frontPlateZ = (SUV_CONFIG.frontBumperZ || 2.03) + 0.01; // Offset forward to prevent Z-fighting
+  // Resolve base bumper coordinates (or fallback defaults matching configuration)
+  const frontBumperY = SUV_CONFIG.frontBumperY || 0.48;
+  const frontBumperZ = SUV_CONFIG.frontBumperZ || 2.01;
 
-  // Rear coordinates derived from configuration
-  const rearPlateY = (SUV_CONFIG.rearBumperY || 0.52) + 0.02; // Mounted slightly above bottom valance
-  const rearPlateZ = (SUV_CONFIG.rearBumperZ || -1.87) - 0.01; // Offset rearward to prevent Z-fighting
+  const rearBumperY = SUV_CONFIG.rearBumperY || 0.46;
+  const rearBumperZ = SUV_CONFIG.rearBumperZ || -1.85;
+
+  // 1. FRONT MOUNT: Sits flush on front of the 0.12m deep bumper (half-depth = 0.06m)
+  const frontPlateY = frontBumperY + 0.02; // Positioned slightly above center
+  const frontPlateZ = frontBumperZ + 0.06 + 0.006; // Projected past the outer bumper wall + tiny buffer
+
+  // 2. REAR MOUNT: Sits flush on rear of the 0.14m deep bumper (half-depth = 0.07m)
+  const rearPlateY = rearBumperY + 0.03; // Positioned slightly above center
+  const rearPlateZ = rearBumperZ - 0.07 - 0.006; // Projected past the outer rear wall + tiny buffer
 
   return (
     <group>

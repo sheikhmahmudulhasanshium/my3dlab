@@ -144,6 +144,8 @@ import Doors from "./Doors"; // Import Phase 6 Doors & Windows Module
 import WindshieldWipers from "./Windshield";
 import FrontGrille from "./FrontGrille";
 import LicensePlate from "./LicensePlate"; // Import Phase 7 License Plate Module
+import WinchBumper from "./WinchBumper";
+import Headlights from "./Headlights"; // Import Phase 8 Headlights Module
 export default function SUVAsset({
   rotationSpeed = 0.5,
   steeringAngle = 0,
@@ -254,6 +256,8 @@ export default function SUVAsset({
 <WindshieldWipers/>
 <FrontGrille/>
 <LicensePlate/>
+<WinchBumper/>
+<Headlights/>
 
       {/* ============================================================
           7. LOWER BODY PANELS (Phase 5 Modules)
