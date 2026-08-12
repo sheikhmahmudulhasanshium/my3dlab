@@ -87,7 +87,7 @@ export default function BodyPanels() {
     const axleY = SUV_CONFIG.axleY !== undefined ? SUV_CONFIG.axleY : 0.44;
     const archRadius = SUV_CONFIG.wheelArchRadius !== undefined ? SUV_CONFIG.wheelArchRadius : 0.42;
 
-    const frontEdgeZ = -0.53;
+    const frontEdgeZ = -1.05;
     const rearEdgeZ = -1.72;
 
     // Modified to be triangular over the rear seats:
@@ -266,7 +266,7 @@ export default function BodyPanels() {
       </group>
 
       {/* RIGHT REAR QUARTER ASSEMBLY */}
-      <group position={[halfWidth, 0, 0]}>
+      <group position={[halfWidth-0.012, 0, 0]}>
         <mesh castShadow receiveShadow position={[-0.01, 0.78, rearQuarterFrontZ]}>
           <boxGeometry args={[0.02, 0.38, 0.04]} />
           <meshStandardMaterial color={trimColor} roughness={0.8} />
@@ -276,7 +276,7 @@ export default function BodyPanels() {
         <mesh 
           castShadow 
           receiveShadow 
-          position={[-0.02, 0, 0]} 
+          position={[0.02, 0, 0]} 
           rotation={[0, -Math.PI / 2, 0]}
         >
           <extrudeGeometry args={[rearQuarterShape, extrudeSettings]} />

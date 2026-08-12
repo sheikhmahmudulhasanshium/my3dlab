@@ -55,9 +55,9 @@ export default function FrontGrille() {
         metalness: 0.8,
       }),
       emblemGold: new THREE.MeshStandardMaterial({
-        color: "#e2b042",
-        roughness: 0.12,
-        metalness: 0.95,
+        color: "#fbbf24", // Brighter golden tone
+        roughness: 0.1,
+        metalness: 0.9,
       }),
     };
   }, []);
@@ -141,9 +141,6 @@ export default function FrontGrille() {
     });
   }, []);
 
-  // ============================================================
-  // GRID & WIRE CONFIGURATIONS
-  // ============================================================
   const numVerticalMeshWires = 16;
   const numHorizontalMeshWires = 6;
   const horizontalSlatWidth = 0.44; 
@@ -217,21 +214,23 @@ export default function FrontGrille() {
       </group>
 
       {/* ============================================================
-          5. STYLIZED CENTRAL "S" EMBLEM ASSEMBLY
+          5. STYLIZED CENTRAL "S" EMBLEM ASSEMBLY (PUSHED FORWARD & SCALED)
          ============================================================ */}
-      <group position={[0, 0, 0.012]}>
-        {/* Outer Chrome Boundary Ring */}
+      <group position={[0, 0, 0.032]}>
+        {/* Outer Chrome Boundary Ring (Enlarged for presence) */}
         <mesh castShadow material={materials.chrome}>
-          <torusGeometry args={[0.048, 0.006, 12, 32]} />
+          <torusGeometry args={[0.072, 0.007, 16, 32]} />
         </mesh>
         
         {/* Matte Black Inner Shield Backing Plate */}
         <mesh position={[0, 0, -0.003]} rotation={[Math.PI / 2, 0, 0]} castShadow material={materials.matteBlack}>
-          <cylinderGeometry args={[0.042, 0.042, 0.004, 32]} />
+          <cylinderGeometry args={[0.065, 0.065, 0.004, 32]} />
         </mesh>
 
-        {/* 3D Extruded Gold "S" Logo */}
-        <mesh position={[0, 0, 0.001]} geometry={sLogoGeometry} material={materials.emblemGold} castShadow />
+        {/* 3D Extruded Gold "S" Logo (Scaled up 1.8x for high legibility) */}
+        <group scale={[1.8, 1.8, 1.8]} position={[0, 0, 0.002]}>
+          <mesh geometry={sLogoGeometry} material={materials.emblemGold} castShadow />
+        </group>
       </group>
 
       {/* ============================================================

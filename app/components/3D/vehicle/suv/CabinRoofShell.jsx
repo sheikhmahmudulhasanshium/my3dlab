@@ -86,28 +86,28 @@ import React from "react";
 import { SUV_CONFIG } from "./suv_config";
 
 export default function CabinRoofShell({
-  // Use these props to adjust scale, coordinate offsets, and angles manually
-  position = [0, 0, 0], // [X offset, Y offset, Z offset]
-  rotation = [0, 0, 0], // [Pitch (X), Yaw (Y), Roll (Z)] in radians
-  scale = [1, 1, 1],    // [X scale, Y scale, Z scale]
+  position = [0, 0, 0], 
+  rotation = [0, 0, 0], 
+  scale = [1, 1, 1],    
 }) {
-  const roofY = SUV_CONFIG.roofY; // 1.68m
-  const windowTopY = SUV_CONFIG.windowTopY; // 1.55m
-  const halfWidth = SUV_CONFIG.bodyHalfWidth; // 0.78m
+  const roofY = SUV_CONFIG.roofY ?? 1.68; 
+  const windowTopY = SUV_CONFIG.windowTopY ?? 1.55; 
+  const halfWidth = SUV_CONFIG.bodyHalfWidth ?? 0.78; 
   
   // Longitudinal boundaries mapped to structural pillars
-  const roofFrontZ = SUV_CONFIG.windshieldZ; // 0.95m
-  const roofRearZ = SUV_CONFIG.dPillarZ;     // -1.20m
+  const roofFrontZ = SUV_CONFIG.windshieldZ ?? 0.95; 
+  const roofRearZ = SUV_CONFIG.dPillarZ ?? -1.20;     
   const roofLength = roofFrontZ - roofRearZ; 
   const roofCenterZ = (roofFrontZ + roofRearZ) / 2; 
 
-  const sunroofOpenWidth = 1.16;
+  // Inner opening width between the left and right side rails
+  // halfWidth * 2 (1.56m) minus the two 0.10m side rails = 1.36m opening width
+  const innerOpeningWidth = halfWidth * 2 - 0.20; 
 
   return (
-    // The master group applies the manual offset coordinates, rotation angles, and scales
     <group position={position} rotation={rotation} scale={scale}>
       {/* ============================================================
-          A. MAIN STRUCTURAL ROOF SHELL
+          A. MAIN STRUCTURAL ROOF SHELL (SEALED)
          ============================================================ */}
       <group>
         {/* Left Roof Side Rail / Frame */}
@@ -122,33 +122,34 @@ export default function CabinRoofShell({
           <meshStandardMaterial color="#1e293b" roughness={0.4} metalness={0.2} />
         </mesh>
 
-        {/* Front Header Panel */}
+        {/* Front Header Panel (Z spans from 0.65 to 0.95) */}
         <mesh castShadow receiveShadow position={[0, roofY - 0.01, (roofFrontZ + 0.65) / 2]}>
           <boxGeometry args={[halfWidth * 2 - 0.02, 0.03, roofFrontZ - 0.65]} />
           <meshStandardMaterial color="#1e293b" roughness={0.4} metalness={0.2} />
         </mesh>
 
-        {/* Rear Roof Panel */}
+        {/* Rear Roof Panel (Z spans from -1.20 to -0.50) */}
         <mesh castShadow receiveShadow position={[0, roofY - 0.01, (-0.50 + roofRearZ) / 2]}>
           <boxGeometry args={[halfWidth * 2 - 0.02, 0.03, -0.50 - roofRearZ]} />
           <meshStandardMaterial color="#1e293b" roughness={0.4} metalness={0.2} />
         </mesh>
 
-        {/* Central Crossmember */}
-        <mesh castShadow position={[0, roofY - 0.02, 0.08]}>
-          <boxGeometry args={[sunroofOpenWidth, 0.04, 0.06]} />
+        {/* Central Crossmember (Perfect center joint at Z = 0.075) */}
+        <mesh castShadow position={[0, roofY - 0.02, 0.075]}>
+          <boxGeometry args={[innerOpeningWidth, 0.04, 0.06]} />
           <meshStandardMaterial color="#0f172a" roughness={0.7} />
         </mesh>
       </group>
 
       {/* ============================================================
-          B. SUNROOF GLASS PANELS
+          B. SUNROOF GLASS PANELS (SEALED)
          ============================================================ */}
       <group>
         {/* Front Sliding Glass Panel */}
-        <group position={[0, roofY + 0.005, 0.22]}>
+        {/* Positioned to align flush with front header (0.65) and crossmember (0.075) */}
+        <group position={[0, roofY + 0.005, 0.36]}>
           <mesh castShadow receiveShadow>
-            <boxGeometry args={[sunroofOpenWidth - 0.02, 0.012, 0.56]} />
+            <boxGeometry args={[innerOpeningWidth - 0.01, 0.012, 0.58]} />
             <meshPhysicalMaterial
               color="#0f172a"
               transparent
@@ -162,9 +163,10 @@ export default function CabinRoofShell({
         </group>
 
         {/* Rear Fixed Glass Panel */}
+        {/* Positioned to align flush with crossmember (0.075) and rear roof (-0.50) */}
         <group position={[0, roofY + 0.002, -0.21]}>
           <mesh castShadow receiveShadow>
-            <boxGeometry args={[sunroofOpenWidth - 0.02, 0.012, 0.54]} />
+            <boxGeometry args={[innerOpeningWidth - 0.01, 0.012, 0.59]} />
             <meshPhysicalMaterial
               color="#0f172a"
               transparent

@@ -147,7 +147,7 @@ import LicensePlate from "./LicensePlate";
 import Headlights from "./Headlights"; // Import corrected front lighting
 import BumperPackage from "./WinchBumper";
 import FenderGuards from "./FenderGuards";
-
+import Mirrors from "./Mirrors"; // Import rearview mirrors
 export default function SUVAsset({
   rotationSpeed = 0.5,
   steeringAngle = 0,
@@ -280,6 +280,9 @@ export default function SUVAsset({
 
       {/**Fender Guards */}
       <FenderGuards/>
+
+      {/**Rearview Mirrors */}
+      <Mirrors />
 
     </group>
   );

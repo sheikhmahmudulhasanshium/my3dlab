@@ -252,11 +252,11 @@ export default function Doors({
   const rearDoorCardGeometry = useMemo(() => {
     const shape = new THREE.Shape();
     shape.moveTo(-0.25, 0.54);
-    shape.lineTo(-0.75, 0.54);
-    shape.lineTo(-0.75, 0.86); 
-    shape.lineTo(-1.02, 0.86); 
+    shape.lineTo(-0.50, 0.54);
+    shape.quadraticCurveTo(-0.50, 0.88, -1.02, 0.88); 
     shape.lineTo(-1.02, 0.95); 
     shape.lineTo(-0.25, 0.95); 
+
     shape.closePath();
 
     return new THREE.ExtrudeGeometry(shape, {
@@ -309,15 +309,29 @@ export default function Doors({
     });
   }, []);
 
+  // ============================================================
+  // REAR DOOR GEOMETRY (Concave Circular Arch Cutout)
+  // ============================================================
   const rearDoorGeometry = useMemo(() => {
     const shape = new THREE.Shape();
-    shape.moveTo(r_p1_bottomFront[0], r_p1_bottomFront[1]);
-    shape.lineTo(r_p2_bottomRear[0], r_p2_bottomRear[1]);
-    shape.lineTo(r_p3_archCurve[0], r_p3_archCurve[1]);
-    shape.lineTo(r_p4_topRear[0], r_p4_topRear[1]);
-    shape.lineTo(r_p5_topFront[0], r_p5_topFront[1]);
+    
+    // 1. Start at bottom-front corner of the door
+    shape.moveTo(r_p1_bottomFront[0], r_p1_bottomFront[1]); // [-0.22, 0.52]
+    
+    // 2. Run flat along the bottom of the door to the start of the wheel arch
+    shape.lineTo(-0.52, 0.52); 
+
+    // 3. CONCAVE CIRCULAR CUTOUT:
+    // By placing the control point at [-0.70, 0.88] (directly above the start point),
+    // the line climbs vertically first, then sweeps smoothly backwards to [-1.05, 0.88].
+    shape.quadraticCurveTo(-0.52, 0.86, -1.05, 0.9);
+
+    // 4. Continue straight up the remaining rear edge of the door
+    shape.lineTo(r_p4_topRear[0], r_p4_topRear[1]);         // [-1.05, 1.40]
+    shape.lineTo(r_p5_topFront[0], r_p5_topFront[1]);       // [-0.22, 1.45]
     shape.closePath();
 
+    // Safe Window Cutout Hole (Safely placed above the y=0.88 arch peak)
     const windowHole = new THREE.Path();
     windowHole.moveTo(-0.26, 1.01);   
     windowHole.lineTo(-0.26, 1.41);   
@@ -334,8 +348,11 @@ export default function Doors({
       bevelSize: 0.005,
       bevelSegments: 2,
     });
-  }, [r_p1_bottomFront, r_p2_bottomRear, r_p3_archCurve, r_p4_topRear, r_p5_topFront, rearDoorThickness]);
+  }, [r_p1_bottomFront, r_p4_topRear, r_p5_topFront, rearDoorThickness]);
 
+  // ============================================================
+  // REAR WINDOW GLASS GEOMETRY (Matching Adjusted Boundaries)
+  // ============================================================
   const rearWindowGeometry = useMemo(() => {
     const shape = new THREE.Shape();
     shape.moveTo(-0.25, 1.00);   
@@ -349,7 +366,6 @@ export default function Doors({
       bevelEnabled: false,
     });
   }, []);
-
   const quarterGlassGeometry = useMemo(() => {
     const shape = new THREE.Shape();
     shape.moveTo(q_p1_bottomFront[0], q_p1_bottomFront[1]);
@@ -527,21 +543,20 @@ export default function Doors({
             <meshStandardMaterial color="#3d2314" roughness={0.8} metalness={0.15} />
           </mesh>
 
-          {/* Rear Passenger Armrest & Inner Release Handle */}
-          <group position={[-0.60, 0.76, -0.02]}>
+          {/* Rear Passenger Armrest & Inner Release Handle (SHIFTED FORWARD) */}
+          <group position={[-0.48, 0.76, -0.02]}> {/* Changed position from -0.60 to -0.48 */}
             <mesh castShadow>
-              <boxGeometry args={[0.45, 0.06, 0.04]} />
+              <boxGeometry args={[0.38, 0.06, 0.04]} /> {/* Shortened slightly to fit */}
               <meshStandardMaterial color="#4a2e1b" roughness={0.75} />
             </mesh>
-            <mesh position={[0.15, 0.08, -0.002]} castShadow>
+            <mesh position={[0.10, 0.08, -0.002]} castShadow>
               <boxGeometry args={[0.04, 0.018, 0.008]} />
               <meshStandardMaterial color="#cbd5e1" roughness={0.15} metalness={0.9} />
             </mesh>
           </group>
 
-          {/* Exact Geometric Grab Handle */}
-          <SideDoorHandle x={-0.78} y={0.91} z={rearDoorThickness + 0.025} trimColor={trimColor} isRight={false} />
-          
+          {/* Exact Geometric Grab Handle (RE-CENTERED EXTERNALLY) */}
+          <SideDoorHandle x={-0.66} y={0.91} z={rearDoorThickness + 0.025} trimColor={trimColor} isRight={true} />
           {/* Hinges */}
           <mesh position={[-0.22, 0.60, 0.005]} rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.01, 0.01, 0.04, 8]} />
@@ -578,21 +593,20 @@ export default function Doors({
             <meshStandardMaterial color="#3d2314" roughness={0.8} metalness={0.15} />
           </mesh>
 
-          {/* Rear Passenger Armrest & Inner Release Handle */}
-          <group position={[-0.60, 0.76, -0.02]}>
+          {/* Rear Passenger Armrest & Inner Release Handle (SHIFTED FORWARD) */}
+          <group position={[-0.48, 0.76, -0.02]}> {/* Changed position from -0.60 to -0.48 */}
             <mesh castShadow>
-              <boxGeometry args={[0.45, 0.06, 0.04]} />
+              <boxGeometry args={[0.38, 0.06, 0.04]} /> {/* Shortened slightly to fit */}
               <meshStandardMaterial color="#4a2e1b" roughness={0.75} />
             </mesh>
-            <mesh position={[0.15, 0.08, -0.002]} castShadow>
+            <mesh position={[0.10, 0.08, -0.002]} castShadow>
               <boxGeometry args={[0.04, 0.018, 0.008]} />
               <meshStandardMaterial color="#cbd5e1" roughness={0.15} metalness={0.9} />
             </mesh>
           </group>
 
-          {/* Exact Geometric Grab Handle */}
-          <SideDoorHandle x={-0.78} y={0.91} z={rearDoorThickness + 0.025} trimColor={trimColor} isRight={true} />
-          
+          {/* Exact Geometric Grab Handle (RE-CENTERED EXTERNALLY) */}
+          <SideDoorHandle x={-0.66} y={0.91} z={rearDoorThickness + 0.025} trimColor={trimColor} isRight={true} />
           {/* Hinges */}
           <mesh position={[-0.22, 0.60, 0.005]} rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.01, 0.01, 0.04, 8]} />
